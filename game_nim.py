@@ -13,16 +13,17 @@ class GameNim:
     def get_initial_state(self):
         """
         Returns the initial state of the game.
+        State is represented as (number of remaining pieces, pid of next player to move (0 or 1))
         """
-        return self.num_pieces
+        return (self.num_pieces, 0)
 
-    def get_legal_actions(self, state: int):
+    def get_legal_actions(self, state):
         """
         Returns all allowed actions from current state.
         """
-        return list(range(1, min(state, self.max_take) + 1))
+        return list(range(1, min(state[0], self.max_take) + 1))
 
-    def get_child_state(self, state: int, action: int):
+    def get_child_state(self, state, action: int):
         """
         Makes a move by removing the specified amount of pieces from the board.
         Parameters:
@@ -34,16 +35,17 @@ class GameNim:
             raise ValueError(f"""Given action not within legal parameters.
                  Must be greater than 1 and less than the maximium allowed
                  pieces to take ({self.max_take})""")
-        if action > state:
+        if action > state[0]:
             raise ValueError(f"""Given action not within legal parameters.
                  Must be greater than 1 and less than the current number 
                  of pieces ({self.max_take})""")
-        return state - action
+        child_state_pieces = state[0] - action
+        child_state_player = 1 - state[1]
+        return (child_state_pieces, child_state_player)
 
-    def get_all_child_states(self, state: int):
+    def get_all_child_states(self, state):
         """
-        Returns all child states of the given state.
-        TODO Might return action to reach each state later
+        Returns all child states and the action to reach it from the given state.
         """
         actions = self.get_legal_actions(state)
         action_state_pairs = []
@@ -51,11 +53,23 @@ class GameNim:
             action_state_pairs.append(
                 (action, self.get_child_state(state, action)))
 
-    def state_is_goal_state(self, state: int):
+    def state_is_final(self, state):
         """
         Returns a boolean for whether the given state is a goal state or not.
         """
-        return state == 0
+        return state[0] == 0
+
+    def pid_to_play(self, state, pid: int):
+        """
+        Returns True if the next player is pid, False otherwise.
+        """
+        return state[1] == pid
+
+    def winner_is_p2(self, state, pid: int):
+        """
+        Return True if the winner of this game is player 2, False otherwise.
+        """
+        return self.state_is_final(state) and not self.pid_to_play(state, pid)
 
     def __str__(self):
         return f"N = {self.num_pieces}, K = {self.max_take}"
