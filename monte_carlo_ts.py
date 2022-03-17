@@ -36,7 +36,7 @@ class MonteCarloTreeSearch:
         for _ in range(self.simulations):
             self.simulate(root_state)
         self.state = root_state
-        return self.select_action(0)
+        return self.select_action(root_state, 0)
 
     def simulate(self, root_state):
         """
@@ -61,7 +61,7 @@ class MonteCarloTreeSearch:
             if state_t not in self.tree:
                 self.new_node(state_t)
                 return visited_states, performed_actions
-            action = self.select_action(exploration)
+            action = self.select_action(state_t, exploration)
             performed_actions.append(action)
             self.state = self.board.get_child_state(self.state, action)
         return visited_states, performed_actions
@@ -78,27 +78,27 @@ class MonteCarloTreeSearch:
             self.state = self.board.get_child_state(self.state, action)
         return self.board.winner_is_pid(self.state, self.pid), first_action
 
-    def select_action(self, exploration):
+    def select_action(self, state, exploration):
         """
         sdfjlsdkfj
         """
-        legal_actions = self.board.get_legal_actions(self.state)
+        legal_actions = self.board.get_legal_actions(state)
         action_values = []
-        if self.board.pid_to_play(self.state, self.pid):  # If our turn
+        if self.board.pid_to_play(state, self.pid):  # If our turn
             for action in legal_actions:
                 action_value = self.heuristic[
-                    (self.state, action)] + exploration * np.sqrt(
-                        np.log(self.visit_counts_s[self.state]) /
-                        self.visit_counts_sa[(self.state, action)])
+                    (state, action)] + exploration * np.sqrt(
+                        np.log(self.visit_counts_s[state]) /
+                        self.visit_counts_sa[(state, action)])
                 action_values.append(action_value)
             chosen_action_index = np.argmax(np.array(action_values))
             chosen_action = legal_actions[chosen_action_index]
         else:
             for action in legal_actions:
                 action_value = self.heuristic[
-                    (self.state, action)] - exploration * np.sqrt(
-                        np.log(self.visit_counts_s[self.state]) /
-                        self.visit_counts_sa[(self.state, action)])
+                    (state, action)] - exploration * np.sqrt(
+                        np.log(self.visit_counts_s[state]) /
+                        self.visit_counts_sa[(state, action)])
                 action_values.append(action_value)
             chosen_action_index = np.argmin(np.array(action_values))
             chosen_action = legal_actions[chosen_action_index]
