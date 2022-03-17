@@ -3,16 +3,17 @@
 import numpy as np
 
 from game_nim import GameNim
+from actor_network import ActorNetwork
 
 
-class MonteCarloTreeSearch():
+class MonteCarloTreeSearch:
     """
     Class for running Monte Carlo Tree search on a simworld.
     """
 
     def __init__(self,
                  board,
-                 default_policy,
+                 default_policy: ActorNetwork,
                  pid: int,
                  simulations: int = 500,
                  default_exp_const: int = 1):
@@ -70,10 +71,10 @@ class MonteCarloTreeSearch():
         does a thing
         """
         if not self.board.state_is_final(self.state):
-            first_action = self.default_policy.get_action(self.state)
+            first_action = self.default_policy.propose_action(self.state)
             self.state = self.board.get_child_state(self.state, first_action)
         while not self.board.state_is_final(self.state):
-            action = self.default_policy.get_action(self.state)
+            action = self.default_policy.propose_action(self.state)
             self.state = self.board.get_child_state(self.state, action)
         return self.board.winner_is_pid(self.state, self.pid), first_action
 
