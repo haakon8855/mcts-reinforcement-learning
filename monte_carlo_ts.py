@@ -13,7 +13,7 @@ class MonteCarloTreeSearch:
 
     def __init__(self,
                  board,
-                 default_policy: ActorNetwork,
+                 default_policy,
                  pid: int,
                  simulations: int = 500,
                  default_exp_const: int = 1):

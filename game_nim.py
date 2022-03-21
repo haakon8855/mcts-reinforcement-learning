@@ -17,6 +17,18 @@ class GameNim:
         """
         return (self.num_pieces, 0)
 
+    def get_state_size(self):
+        """
+        Returns the length of the state vector.
+        """
+        return len(self.get_initial_state())
+
+    def get_move_size(self):
+        """
+        Returns the length of the move vector.
+        """
+        return 1
+
     def get_legal_actions(self, state):
         """
         Returns all allowed actions from current state.
@@ -40,8 +52,8 @@ class GameNim:
                  Must be greater than 1 and less than the current number 
                  of pieces ({self.max_take})""")
         child_state_pieces = state[0] - action
-        child_state_player = 1 - state[1]
-        return (child_state_pieces, child_state_player)
+        child_state_pid = 1 - state[1]
+        return (child_state_pieces, child_state_pid)
 
     def get_all_child_states(self, state):
         """
@@ -65,7 +77,7 @@ class GameNim:
         """
         return state[1] == pid
 
-    def winner_is_p2(self, state, pid: int):
+    def winner_is_opponent(self, state, pid: int):
         """
         Return True if the winner of this game is player 2, False otherwise.
         """
