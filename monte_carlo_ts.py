@@ -14,7 +14,6 @@ class MonteCarloTreeSearch:
     def __init__(self,
                  board,
                  default_policy,
-                 pid: int,
                  simulations: int = 500,
                  default_exp_const: int = 1):
         self.board = board  # Of type simworld
@@ -23,7 +22,6 @@ class MonteCarloTreeSearch:
         self.default_exp_const = default_exp_const
         self.simulations = simulations  # M-value for number of simulations
         self.state = None
-        self.pid = pid
         self.tree = []
         self.heuristic = {}
         self.visit_counts_s = {}
@@ -80,7 +78,7 @@ class MonteCarloTreeSearch:
         while not self.board.state_is_final(self.state):
             action = self.default_policy.propose_action(self.state)
             self.state = self.board.get_child_state(self.state, action)
-        return self.board.winner_is_pid(self.state, self.pid), first_action
+        return self.board.winner_is_p0(self.state), first_action
 
     def select_action(self, state, exploration):
         """
@@ -90,7 +88,7 @@ class MonteCarloTreeSearch:
         """
         legal_actions = self.board.get_legal_actions(state)
         action_values = []
-        if self.board.pid_to_play(state, self.pid):  # If our turn
+        if self.board.p0_to_play(state):  # If our turn
             for action in legal_actions:
                 action_value = self.heuristic[
                     (state, action)] + exploration * np.sqrt(

@@ -15,7 +15,7 @@ class GameNim:
         Returns the initial state of the game.
         State is represented as (number of remaining pieces, pid of next player to move (0 or 1))
         """
-        return (self.num_pieces, 0)
+        return self.get_one_hot_from_state((self.num_pieces, 0))
 
     def get_state_size(self):
         """
@@ -33,7 +33,8 @@ class GameNim:
         """
         Returns all allowed actions from current state.
         """
-        return list(range(1, min(state[0], self.max_take) + 1))
+        num_discs = self.get_num_discs_from_one_hot(state)
+        return list(range(1, min(num_discs, self.max_take) + 1))
 
     def get_child_state(self, state, action: int):
         """
@@ -43,16 +44,17 @@ class GameNim:
         Exceptions:
             Throws ValueError if action is not within legal parameters
         """
+        num_discs = self.get_num_discs_from_one_hot(state)
         if action < 1 or action > self.max_take:
             raise ValueError(f"""Given action not within legal parameters.
                  Must be greater than 1 and less than the maximium allowed
                  pieces to take ({self.max_take})""")
-        if action > state[0]:
+        if action > num_discs:
             raise ValueError(f"""Given action not within legal parameters.
                  Must be greater than 1 and less than the current number 
                  of pieces ({self.max_take})""")
-        child_state_pieces = state[0] - action
-        child_state_pid = 1 - state[1]
+        child_state_pieces = num_discs - action
+        child_state_pid = 1 - state[-1]
         return (child_state_pieces, child_state_pid)
 
     def get_all_child_states(self, state):
@@ -69,19 +71,38 @@ class GameNim:
         """
         Returns a boolean for whether the given state is a goal state or not.
         """
-        return state[0] == 0
+        return state[0] == 1
 
-    def pid_to_play(self, state, pid: int):
+    def p0_to_play(self, state):
         """
         Returns True if the next player is pid, False otherwise.
         """
-        return state[1] == pid
+        return state[-1] == 0
 
-    def winner_is_opponent(self, state, pid: int):
+    def winner_is_p0(self, state):
         """
-        Return True if the winner of this game is player 2, False otherwise.
+        Return 1 if the winner of this game is player 1, -1 otherwise.
         """
-        return self.state_is_final(state) and not self.pid_to_play(state, pid)
+        return self.state_is_final(state) and not self.p0_to_play(state)
+
+    def get_one_hot_from_state(self, state_num):
+        """
+        Returns a one-hot encoded vector of the state given the state.
+        """
+        pid = state_num[1]  # Extract the pid
+        curr_discs = state_num[0]  # Get the current amount of remaining discs
+        state_oh = [0] * (self.num_pieces + 1)  # Create a list of zeros
+        state_oh[curr_discs] = 1  # Set the correct index's value to 1
+        state_oh.append(pid)  # Append the pid to the end
+        return state_oh
+
+    def get_num_discs_from_one_hot(self, state_oh):
+        """
+        Returns the number of remaining discs given a one-hot encoded state.
+        """
+        state_oh = state_oh[:-1]  # Remove pid
+        curr_discs = state_oh.index(1)  # Get index of the 1 in the vector
+        return curr_discs
 
     def __str__(self):
         return f"N = {self.num_pieces}, K = {self.max_take}"

@@ -15,8 +15,7 @@ class ReinforcementLearner():
         self.save_interval = save_interval
         self.sim_world = GameNim(num_pieces=10, max_take=3)
         self.actor_network = None
-        self.mcts_p1 = None
-        self.mcts_p2 = None
+        self.mcts = None
         self.initialize_actor_network()
         self.initialize_mcts()
 
@@ -33,18 +32,15 @@ class ReinforcementLearner():
         """
         Initializes monte carlo tree search with the correct parameters.
         """
-        self.mcts_p1 = MonteCarloTreeSearch(board=self.sim_world,
-                                            default_policy=self.actor_network,
-                                            pid=0)
-        self.mcts_p2 = MonteCarloTreeSearch(board=self.sim_world,
-                                            default_policy=self.actor_network,
-                                            pid=1)
+        self.mcts = MonteCarloTreeSearch(board=self.sim_world,
+                                         default_policy=self.actor_network)
 
     def run(self):
         """
         Runs the traning algorithm to train the default policy neural network
         mapping states to actions.
         """
+        # Clear replay buffer RBUF
 
 
 def main():
