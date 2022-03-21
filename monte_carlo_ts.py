@@ -31,7 +31,8 @@ class MonteCarloTreeSearch:
 
     def mc_tree_search(self, root_state):
         """
-        Does a thing
+        Performs MCTS for self.simulations number of times. Each resulting in
+        a new node in the tree being created.
         """
         for _ in range(self.simulations):
             self.simulate(root_state)
@@ -40,7 +41,9 @@ class MonteCarloTreeSearch:
 
     def simulate(self, root_state):
         """
-        Does a thing
+        Simulates one run of the game from the root state. Walks down the tree
+        and performs rollout if a leaf node is reached before the simulated
+        game is over.
         """
         self.state = root_state
         visited_states, performed_actions = self.simulate_tree()
@@ -50,7 +53,7 @@ class MonteCarloTreeSearch:
 
     def simulate_tree(self):
         """
-        Does a thing
+        Simulates the walk of moves down the tree itself.
         """
         exploration = self.default_exp_const
         visited_states = []
@@ -68,7 +71,8 @@ class MonteCarloTreeSearch:
 
     def simulate_default(self):
         """
-        does a thing
+        Simulates the rollout of default moves after a leaf node in the tree
+        is reached. The default policy is used to determine the moves.
         """
         if not self.board.state_is_final(self.state):
             first_action = self.default_policy.propose_action(self.state)
@@ -80,7 +84,9 @@ class MonteCarloTreeSearch:
 
     def select_action(self, state, exploration):
         """
-        sdfjlsdkfj
+        Selects an action to perform when walking down the tree. Actions never
+        performed before, or actions which have been performed relatively few
+        number of times are favoured.
         """
         legal_actions = self.board.get_legal_actions(state)
         action_values = []
@@ -106,7 +112,8 @@ class MonteCarloTreeSearch:
 
     def backup(self, visited_states, performed_actions, outcome):
         """
-        sdflksdjf
+        Runs the backup algorithm on the network to update the values along
+        the nodes and paths based on the game's outcome.
         """
         for stat_act in zip(visited_states, performed_actions):
             self.visit_counts_s[
@@ -118,7 +125,7 @@ class MonteCarloTreeSearch:
 
     def new_node(self, state_t):
         """
-        sdjflkj
+        Creates a new node in the tree and sets all its values to 0.
         """
         self.tree.append(state_t)
         self.visit_counts_s[state_t] = 0

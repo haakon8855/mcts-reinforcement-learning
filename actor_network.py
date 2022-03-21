@@ -22,3 +22,9 @@ class ActorNetwork:
         Returns a proposed action given a state.
         """
         return self.model(state)
+
+    def fit(self, train_x, train_y, epochs, batch_size):
+        """
+        Trains the network on a minibatch of cases.
+        """
+        self.model.fit(train_x, train_y, epochs, batch_size)
