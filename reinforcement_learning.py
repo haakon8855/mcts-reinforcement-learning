@@ -1,5 +1,7 @@
 """Haakon8855"""
 
+import numpy as np
+
 from monte_carlo_ts import MonteCarloTreeSearch
 from game_nim import GameNim
 from actor_network import ActorNetwork
@@ -11,9 +13,12 @@ class ReinforcementLearner():
     (MCTS) to train the default policy (in this case an ANN).
     """
 
-    def __init__(self, save_interval: int = 5):
+    def __init__(self, num_games: int = 25, save_interval: int = 5):
+        self.num_games = num_games
         self.save_interval = save_interval
-        self.sim_world = GameNim(num_pieces=10, max_take=3)
+        self.rbuf_distributions = []
+        self.rbuf_states = []
+        self.sim_world = GameNim(num_pieces=10, max_take=2)
         self.actor_network = None
         self.mcts = None
         self.initialize_actor_network()
@@ -26,7 +31,8 @@ class ReinforcementLearner():
         """
         input_size = self.sim_world.get_state_size()
         output_size = self.sim_world.get_move_size()
-        self.actor_network = ActorNetwork(input_size, output_size)
+        self.actor_network = ActorNetwork(input_size, output_size,
+                                          self.sim_world)
 
     def initialize_mcts(self):
         """
@@ -41,14 +47,46 @@ class ReinforcementLearner():
         mapping states to actions.
         """
         # Clear replay buffer RBUF
+        self.rbuf_distributions = []
+        self.rbuf_states = []
+        # Randomly init ANET - Done
+        # for game in num_games
+        for i in range(self.num_games):
+            # s_init <- starting_board_state
+            state = self.sim_world.get_initial_state()
+            self.mcts.initialize_variables()
+            while not self.sim_world.state_is_final(state):
+                # Initialize mcts to a single root which represents s_init
+                # and run a simulated game from the root state.
+                action, distribution = self.mcts.mc_tree_search(state)
+                # Append distribution to RBUF
+                self.rbuf_distributions.append(distribution)
+                self.rbuf_states.append(state)
+                # Choose actual move from D
+                largest_action_index = np.argmax(distribution) + 1
+                action = self.sim_world.get_one_hot_action(
+                    largest_action_index)
+                # Perform chosen action
+                state = self.sim_world.get_child_state(state, action)
+            # Train ANET on random minibatch of cases from RBUF
+            self.train_actor_network()
+            # TODO: If i % (self.num_games//self.save_interval) == 0: save weights
+
+    def train_actor_network(self):
+        """
+        Trains the actor network on a minibatch of cases from RBUF.
+        """
+        self.actor_network.fit(train_x=np.array(self.rbuf_states),
+                               train_y=np.array(self.rbuf_distributions),
+                               epochs=10)
 
 
 def main():
     """
     Main function for running this python script.
     """
-    rl = ReinforcementLearner()
-    rl.run()
+    reinforcement_learner = ReinforcementLearner()
+    reinforcement_learner.run()
 
 
 if __name__ == "__main__":

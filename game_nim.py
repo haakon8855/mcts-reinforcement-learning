@@ -1,5 +1,7 @@
 """Haakon8855"""
 
+import numpy as np
+
 
 class GameNim:
     """
@@ -15,7 +17,7 @@ class GameNim:
         Returns the initial state of the game.
         State is represented as (number of remaining pieces, pid of next player to move (0 or 1))
         """
-        return self.get_one_hot_from_state((self.num_pieces, 0))
+        return tuple(self.get_one_hot_from_state((self.num_pieces, 0)))
 
     def get_state_size(self):
         """
@@ -60,7 +62,8 @@ class GameNim:
                  of pieces ({self.max_take})""")
         child_state_pieces = num_discs - action_num
         child_state_pid = 1 - state[-1]
-        return (child_state_pieces, child_state_pid)
+        return self.get_one_hot_from_state(
+            (child_state_pieces, child_state_pid))
 
     def get_all_child_states(self, state):
         """
@@ -71,6 +74,7 @@ class GameNim:
         for action in actions:
             action_state_pairs.append(
                 (action, self.get_child_state(state, action)))
+        return action_state_pairs
 
     def state_is_final(self, state):
         """
@@ -88,7 +92,8 @@ class GameNim:
         """
         Return 1 if the winner of this game is player 1, -1 otherwise.
         """
-        return self.state_is_final(state) and not self.p0_to_play(state)
+        return [-1, 1][self.state_is_final(state)
+                       and not self.p0_to_play(state)]
 
     def get_one_hot_from_state(self, state_num):
         """
@@ -99,7 +104,7 @@ class GameNim:
         state_oh = [0] * (self.num_pieces + 1)  # Create a list of zeros
         state_oh[curr_discs] = 1  # Set the correct index's value to 1
         state_oh.append(pid)  # Append the pid to the end
-        return state_oh
+        return tuple(state_oh)
 
     def get_num_discs_from_one_hot(self, state_oh):
         """
@@ -115,13 +120,13 @@ class GameNim:
         """
         action_oh = [0] * (self.max_take)
         action_oh[action_num - 1] = 1
-        return action_oh
+        return tuple(action_oh)
 
     def get_action_num_from_one_hot(self, action_oh):
         """
         Returns the action as a number given a one-hot encoded action.
         """
-        return action_oh.index(1) + 1
+        return np.argmax(action_oh) + 1
 
     def __str__(self):
         return f"N = {self.num_pieces}, K = {self.max_take}"
@@ -135,7 +140,6 @@ def main():
     print(simworld)
     state = simworld.get_initial_state()
     print(simworld.get_legal_actions(state))
-    print(simworld.get_legal_actions(10))
 
 
 if __name__ == "__main__":
