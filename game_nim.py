@@ -21,22 +21,26 @@ class GameNim:
         """
         Returns the length of the state vector.
         """
-        return len(self.get_initial_state())
+        return self.num_pieces + 1 + 1
 
     def get_move_size(self):
         """
         Returns the length of the move vector.
         """
-        return 1
+        return self.max_take
 
     def get_legal_actions(self, state):
         """
         Returns all allowed actions from current state.
         """
         num_discs = self.get_num_discs_from_one_hot(state)
-        return list(range(1, min(num_discs, self.max_take) + 1))
+        legal_actions_num = list(range(1, min(num_discs, self.max_take) + 1))
+        legal_actions = []
+        for action_num in legal_actions_num:
+            legal_actions.append(self.get_one_hot_action(action_num))
+        return legal_actions
 
-    def get_child_state(self, state, action: int):
+    def get_child_state(self, state, action):
         """
         Makes a move by removing the specified amount of pieces from the board.
         Parameters:
@@ -45,15 +49,16 @@ class GameNim:
             Throws ValueError if action is not within legal parameters
         """
         num_discs = self.get_num_discs_from_one_hot(state)
-        if action < 1 or action > self.max_take:
+        action_num = self.get_action_num_from_one_hot(action)
+        if action_num < 1 or action_num > self.max_take:
             raise ValueError(f"""Given action not within legal parameters.
                  Must be greater than 1 and less than the maximium allowed
                  pieces to take ({self.max_take})""")
-        if action > num_discs:
+        if action_num > num_discs:
             raise ValueError(f"""Given action not within legal parameters.
                  Must be greater than 1 and less than the current number 
                  of pieces ({self.max_take})""")
-        child_state_pieces = num_discs - action
+        child_state_pieces = num_discs - action_num
         child_state_pid = 1 - state[-1]
         return (child_state_pieces, child_state_pid)
 
@@ -103,6 +108,20 @@ class GameNim:
         state_oh = state_oh[:-1]  # Remove pid
         curr_discs = state_oh.index(1)  # Get index of the 1 in the vector
         return curr_discs
+
+    def get_one_hot_action(self, action_num):
+        """
+        Returns the given action as a one-hot encoded vector.
+        """
+        action_oh = [0] * (self.max_take)
+        action_oh[action_num - 1] = 1
+        return action_oh
+
+    def get_action_num_from_one_hot(self, action_oh):
+        """
+        Returns the action as a number given a one-hot encoded action.
+        """
+        return action_oh.index(1) + 1
 
     def __str__(self):
         return f"N = {self.num_pieces}, K = {self.max_take}"
