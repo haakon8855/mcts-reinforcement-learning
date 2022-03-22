@@ -88,7 +88,9 @@ class ReinforcementLearner():
                 state = self.sim_world.get_child_state(state, action)
             # Train ANET on random minibatch of cases from RBUF
             self.train_actor_network()
-            # TODO: If i % (self.num_games//self.save_interval) == 0: save weights
+            if i % (self.num_games // self.save_interval) == 0:
+                # TODO: If i % (self.num_games//self.save_interval) == 0: save weights
+                pass
 
     def train_actor_network(self):
         """
@@ -103,7 +105,7 @@ class ReinforcementLearner():
         Tests the trained nim policy.
         """
         for i in range(1, self.num_pieces + 1):
-            state = self.sim_world.get_one_hot_from_state((i, 0))
+            state = self.sim_world.get_one_hot_state((i, 0))
             # Print state
             num_state = self.sim_world.get_num_discs_from_one_hot(state)
             print(f"State: {num_state}")

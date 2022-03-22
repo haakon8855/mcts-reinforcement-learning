@@ -17,7 +17,7 @@ class GameNim:
         Returns the initial state of the game.
         State is represented as (number of remaining pieces, pid of next player to move (0 or 1))
         """
-        return tuple(self.get_one_hot_from_state((self.num_pieces, 0)))
+        return tuple(self.get_one_hot_state((self.num_pieces, 0)))
 
     def get_state_size(self):
         """
@@ -62,8 +62,7 @@ class GameNim:
                  of pieces ({self.max_take})""")
         child_state_pieces = num_discs - action_num
         child_state_pid = 1 - state[-1]
-        return self.get_one_hot_from_state(
-            (child_state_pieces, child_state_pid))
+        return self.get_one_hot_state((child_state_pieces, child_state_pid))
 
     def get_all_child_states(self, state):
         """
@@ -95,7 +94,7 @@ class GameNim:
         return [-1, 1][self.state_is_final(state)
                        and not self.p0_to_play(state)]
 
-    def get_one_hot_from_state(self, state_num):
+    def get_one_hot_state(self, state_num):
         """
         Returns a one-hot encoded vector of the state given the state.
         """
