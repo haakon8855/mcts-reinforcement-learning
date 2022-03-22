@@ -13,14 +13,15 @@ class ReinforcementLearner():
     (MCTS) to train the default policy (in this case an ANN).
     """
 
-    def __init__(self, num_games: int = 20, save_interval: int = 5):
+    def __init__(self, num_games: int = 40, save_interval: int = 5):
         self.num_games = num_games
         self.save_interval = save_interval
         self.rbuf_distributions = []
         self.rbuf_states = []
+        self.epsilon = 0.1
 
         # simworld
-        self.num_pieces = 11
+        self.num_pieces = 14
         self.max_take = 2
         self.sim_world = GameNim(num_pieces=self.num_pieces,
                                  max_take=self.max_take)
@@ -69,9 +70,20 @@ class ReinforcementLearner():
                 self.rbuf_distributions.append(distribution)
                 self.rbuf_states.append(state)
                 # Choose actual move from D
-                largest_action_index = np.argmax(distribution) + 1
-                action = self.sim_world.get_one_hot_action(
-                    largest_action_index)
+                chosen_action_index = np.argmax(distribution) + 1
+                if np.random.random() < self.epsilon:
+                    # Choose one random legal action
+                    # Copy distribution
+                    random_distribution = distribution.copy()
+                    # Set all probabilities larger than 0 to 1
+                    random_distribution[random_distribution > 0] = 1
+                    # Normalize vector to choose uniformly between legal actions
+                    random_distribution = random_distribution / random_distribution.sum(
+                    )
+                    chosen_action_index = np.random.choice(
+                        len(random_distribution), 1,
+                        p=random_distribution)[0] + 1
+                action = self.sim_world.get_one_hot_action(chosen_action_index)
                 # Perform chosen action
                 state = self.sim_world.get_child_state(state, action)
             # Train ANET on random minibatch of cases from RBUF

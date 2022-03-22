@@ -11,7 +11,7 @@ class MonteCarloTreeSearch:
     def __init__(self,
                  board,
                  default_policy,
-                 simulations: int = 1000,
+                 simulations: int = 200,
                  default_exp_const: int = 1):
         self.board = board  # Of type simworld
         self.default_policy = default_policy
@@ -51,7 +51,6 @@ class MonteCarloTreeSearch:
         outcome, first_action = self.simulate_default()
         if first_action is not None:
             performed_actions.append(first_action)
-        # print(f"Outcome was {outcome}!")
         self.backup(visited_states, performed_actions, outcome)
 
     def simulate_tree(self):
