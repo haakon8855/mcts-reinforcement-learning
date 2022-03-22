@@ -83,7 +83,7 @@ class GameNim:
 
     def p0_to_play(self, state):
         """
-        Returns True if the next player is pid, False otherwise.
+        Returns True if the next player is p0, False otherwise.
         """
         return state[-1] == 0
 
