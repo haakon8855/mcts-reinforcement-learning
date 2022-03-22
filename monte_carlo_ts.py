@@ -2,8 +2,6 @@
 
 import numpy as np
 
-from game_nim import GameNim
-
 
 class MonteCarloTreeSearch:
     """

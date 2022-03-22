@@ -13,12 +13,18 @@ class ReinforcementLearner():
     (MCTS) to train the default policy (in this case an ANN).
     """
 
-    def __init__(self, num_games: int = 25, save_interval: int = 5):
+    def __init__(self, num_games: int = 20, save_interval: int = 5):
         self.num_games = num_games
         self.save_interval = save_interval
         self.rbuf_distributions = []
         self.rbuf_states = []
-        self.sim_world = GameNim(num_pieces=10, max_take=2)
+
+        # simworld
+        self.num_pieces = 11
+        self.max_take = 2
+        self.sim_world = GameNim(num_pieces=self.num_pieces,
+                                 max_take=self.max_take)
+
         self.actor_network = None
         self.mcts = None
         self.initialize_actor_network()
@@ -80,6 +86,22 @@ class ReinforcementLearner():
                                train_y=np.array(self.rbuf_distributions),
                                epochs=10)
 
+    def test_nim(self):
+        """
+        Tests the trained nim policy.
+        """
+        for i in range(1, self.num_pieces + 1):
+            state = self.sim_world.get_one_hot_from_state((i, 0))
+            # Print state
+            num_state = self.sim_world.get_num_discs_from_one_hot(state)
+            print(f"State: {num_state}")
+            # Find move
+            action, distr = self.actor_network.propose_action(
+                state, get_distribution=True)
+            # Print move
+            print(f"Proposed action: {action}")
+            print(f"Proposed action distribution: {distr}")
+
 
 def main():
     """
@@ -87,6 +109,7 @@ def main():
     """
     reinforcement_learner = ReinforcementLearner()
     reinforcement_learner.run()
+    reinforcement_learner.test_nim()
 
 
 if __name__ == "__main__":

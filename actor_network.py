@@ -17,6 +17,8 @@ class ActorNetwork:
             ks.layers.Flatten(),
             ks.layers.Dense(300, activation='relu'),
             ks.layers.Dense(300, activation='relu'),
+            ks.layers.Dense(300, activation='relu'),
+            ks.layers.Dense(300, activation='relu'),
             ks.layers.Dense(output_size, activation='softmax'),
         ])
         self.compile_network()
@@ -30,7 +32,7 @@ class ActorNetwork:
             loss=ks.losses.CategoricalCrossentropy(),
         )
 
-    def propose_action(self, state):
+    def propose_action(self, state, get_distribution=False):
         """
         Returns a proposed action given a state.
         """
@@ -42,6 +44,8 @@ class ActorNetwork:
         proposed_action_num = self.board.get_action_num_from_one_hot(
             proposed_action_distribution)
         proposed_action = self.board.get_one_hot_action(proposed_action_num)
+        if get_distribution:
+            return proposed_action, proposed_action_distribution
         return proposed_action
 
     def fit(self, train_x, train_y, epochs):
