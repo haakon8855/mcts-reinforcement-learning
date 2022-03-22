@@ -8,15 +8,19 @@ class GameHex:
     Implementation of the HEX game as a simworld.
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, board_size):
+        self.board_size = board_size
 
     def get_initial_state(self):
         """
         Returns the initial state of the game.
         State is represented as TODO
         """
-        # TODO: Implement
+        board = np.zeros((self.board_size, self.board_size, 2))
+        board = np.arange(0, 32).reshape((self.board_size, self.board_size, 2))
+        pid = [1.0, 0.0]
+        print(board)
+        return tuple(board.flatten()) + tuple(pid)
 
     def get_state_size(self):
         """
@@ -69,7 +73,7 @@ class GameHex:
         return [-1, 1][self.state_is_final(state)
                        and not self.p0_to_play(state)]
 
-    def get_one_hot_from_state(self, state_num):
+    def get_one_hot_state(self, board_and_pid):
         """
         Returns a one-hot encoded vector of the state given the state.
         """
@@ -81,19 +85,32 @@ class GameHex:
         """
         # TODO: Implement
 
+    def get_board_and_pid_from_state(self, state):
+        """
+        Returns the board and pid as numpy arrays given a gamestate.
+        """
+        board = np.array(state[:-2]).reshape(
+            (self.board_size, self.board_size, 2))
+        pid = np.array(state[-2:])
+
+        return board, pid
+
     def __str__(self):
-        # TODO: Implement
-        return ""
+        return f"Board size is {self.board_size}x{self.board_size}."
 
 
 def main():
     """
     Main function for running this python script.
     """
-    simworld = GameHex()
+    simworld = GameHex(4)
     print(simworld)
     state = simworld.get_initial_state()
-    print(simworld.get_legal_actions(state))
+    print(f"State: {state}")
+    board, pid = simworld.get_board_and_pid_from_state(state)
+    print(f"Board: {board}")
+    print(f"PID:   {pid}")
+    # print(simworld.get_legal_actions(state))
 
 
 if __name__ == "__main__":
