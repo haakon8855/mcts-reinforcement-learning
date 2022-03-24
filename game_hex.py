@@ -10,6 +10,14 @@ class GameHex:
 
     def __init__(self, board_size):
         self.board_size = board_size
+        self.neighbor_offsets = np.array([
+            [-1, 0],
+            [-1, 1],
+            [0, -1],
+            [0, 1],
+            [1, -1],
+            [1, 0],
+        ])
 
     def get_initial_state(self):
         """
@@ -67,11 +75,63 @@ class GameHex:
         chils_state_pid = np.flip(pid)
         return self.get_one_hot_state(child_state_board, chils_state_pid)
 
-    def state_is_final(self, state):
+    def state_is_final(self, state, get_winner=False):
         """
         Returns a boolean for whether the given state is a goal state or not.
         """
-        # TODO: Implement
+        board = self.get_board_readable(state)
+        p0_has_path = self.player_has_path(board, 1)
+        board = board.T
+        p1_has_path = self.player_has_path(board, 2)
+        is_final = p0_has_path or p1_has_path
+        if get_winner:
+            winner_pid = None
+            if is_final:
+                winner_pid = [(1.0, 0.0), (0.0, 1.0)][p1_has_path]
+            return is_final, winner_pid
+        return is_final
+
+    def player_has_path(self, board, player):
+        """
+        Helper method for self.state_is_final. Returns wheter the given player
+        has a path from left to right.
+        """
+        visited = np.zeros((board.shape))
+        stack = []
+        start = board[:, 0]
+        for i, cell in enumerate(start):
+            if cell == player:
+                # Visit
+                visited[i, 0] = 1
+                stack.append((i, 0))
+                while len(stack) > 0:
+                    current = stack[-1]
+                    visited[current] = 1
+                    if current[1] == self.board_size - 1:
+                        return True
+                    neighbor = self.get_unvisited_neighbor_of_player(
+                        board, visited, current[0], current[1])
+                    if neighbor is None:
+                        stack.pop()
+                        continue
+                    stack.append(neighbor)
+        return False
+
+    def get_unvisited_neighbor_of_player(self, board, visited, xpos, ypos):
+        """
+        Returns the coordinates of any unvisited neighbor of
+        the current square.
+        """
+        player = board[xpos, ypos]
+        position = np.array([xpos, ypos])
+        for offset in self.neighbor_offsets:
+            pos_and_offset = position + offset
+            if np.any(pos_and_offset < 0):
+                continue
+            pos_and_offset = tuple(pos_and_offset)
+            if board[pos_and_offset] == player and visited[pos_and_offset] == 0:
+                return pos_and_offset
+        return None
 
     def p0_to_play(self, state):
         """
@@ -84,6 +144,7 @@ class GameHex:
         """
         Return 1 if the winner of this game is player 1, -1 otherwise.
         """
+        # TODO: Fix this to use self.state_is_final instead
         return [-1, 1][self.state_is_final(state)
                        and not self.p0_to_play(state)]
 
@@ -116,6 +177,19 @@ class GameHex:
         pid = np.array(state[-2:])
         return board, pid
 
+    def get_board_readable(self, state):
+        """
+        Returns a string of the board in readable format.
+        """
+        board, _ = self.get_board_and_pid_from_state(state)
+        board = board.reshape((self.board_size**2, 2))
+        p0_pieces = ((board == (1.0, 0.0)).all(axis=1))
+        p1_pieces = ((board == (0.0, 1.0)).all(axis=1))
+        board = np.zeros(self.board_size**2)
+        board[p0_pieces] = 1
+        board[p1_pieces] = 2
+        return board.reshape((self.board_size, self.board_size))
+
     def __str__(self):
         return f"Board size is {self.board_size}x{self.board_size}."
 
@@ -125,19 +199,48 @@ def main():
     Main function for running this python script.
     """
     simworld = GameHex(4)
-    print(simworld)
     state = simworld.get_initial_state()
     board, pid = simworld.get_board_and_pid_from_state(state)
-    print(f"Board: \n{board}\n")
-    print(f"PID:   \n{pid}\n")
+
     legal_actions = simworld.get_legal_actions(state)
-    # print(f"Legal: \n{simworld.get_legal_actions(state)}\n")
     state = simworld.get_child_state(state, legal_actions[4])
-    board, pid = simworld.get_board_and_pid_from_state(state)
-    print(f"Board: \n{board}\n")
-    print(f"PID:   \n{pid}\n")
     legal_actions = simworld.get_legal_actions(state)
-    print(f"Legal: \n{simworld.get_legal_actions(state)}\n")
+    state = simworld.get_child_state(state, legal_actions[0])
+    legal_actions = simworld.get_legal_actions(state)
+    state = simworld.get_child_state(state, legal_actions[0])
+    legal_actions = simworld.get_legal_actions(state)
+    state = simworld.get_child_state(state, legal_actions[12])
+    legal_actions = simworld.get_legal_actions(state)
+    state = simworld.get_child_state(state, legal_actions[3])
+    legal_actions = simworld.get_legal_actions(state)
+    state = simworld.get_child_state(state, legal_actions[7])
+    legal_actions = simworld.get_legal_actions(state)
+    state = simworld.get_child_state(state, legal_actions[1])
+    legal_actions = simworld.get_legal_actions(state)
+    state = simworld.get_child_state(state, legal_actions[-1])
+    legal_actions = simworld.get_legal_actions(state)
+    state = simworld.get_child_state(state, legal_actions[1])
+
+    # legal_actions = simworld.get_legal_actions(state)
+    # state = simworld.get_child_state(state, legal_actions[4])
+    # legal_actions = simworld.get_legal_actions(state)
+    # state = simworld.get_child_state(state, legal_actions[1])
+    # legal_actions = simworld.get_legal_actions(state)
+    # state = simworld.get_child_state(state, legal_actions[5])
+    # legal_actions = simworld.get_legal_actions(state)
+    # state = simworld.get_child_state(state, legal_actions[3])
+    # legal_actions = simworld.get_legal_actions(state)
+    # state = simworld.get_child_state(state, legal_actions[6])
+    # legal_actions = simworld.get_legal_actions(state)
+    # state = simworld.get_child_state(state, legal_actions[5])
+    # legal_actions = simworld.get_legal_actions(state)
+    # state = simworld.get_child_state(state, legal_actions[0])
+    # legal_actions = simworld.get_legal_actions(state)
+    # state = simworld.get_child_state(state, legal_actions[6])
+
+    board_str = simworld.get_board_readable(state)
+    print(f"Board: \n{board_str}\n")
+    print(f"Won? \n{simworld.state_is_final(state, get_winner=True)}\n")
 
 
 if __name__ == "__main__":
