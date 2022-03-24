@@ -98,7 +98,7 @@ class MonteCarloTreeSearch:
                 action_value = self.heuristic[
                     (state, action)] + exploration * np.sqrt(
                         np.log(self.visit_counts_s[state]) /
-                        self.visit_counts_sa[(state, action)])
+                        (self.visit_counts_sa[(state, action)] + 1))
                 action_values.append(action_value)
             chosen_action_index = np.argmax(np.array(action_values))
             chosen_action = legal_actions[chosen_action_index]
@@ -107,7 +107,7 @@ class MonteCarloTreeSearch:
                 action_value = self.heuristic[
                     (state, action)] - exploration * np.sqrt(
                         np.log(self.visit_counts_s[state]) /
-                        self.visit_counts_sa[(state, action)])
+                        (self.visit_counts_sa[(state, action)] + 1))
                 action_values.append(action_value)
             chosen_action_index = np.argmin(np.array(action_values))
             chosen_action = legal_actions[chosen_action_index]
