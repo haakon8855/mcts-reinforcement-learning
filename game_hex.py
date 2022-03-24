@@ -201,7 +201,6 @@ def main():
     """
     simworld = GameHex(4)
     state = simworld.get_initial_state()
-    board, pid = simworld.get_board_and_pid_from_state(state)
 
     legal_actions = simworld.get_legal_actions(state)
     state = simworld.get_child_state(state, legal_actions[4])
