@@ -23,6 +23,9 @@ class ReinforcementLearner():
 
         self.sim_world = sim_world
 
+        self.weights_path = "model/actor/nim"
+        if isinstance(self.sim_world, GameHex):
+            self.weights_path = "model/actor/hex"
         self.actor_network = None
         self.mcts = None
         self.initialize_actor_network()
@@ -36,7 +39,7 @@ class ReinforcementLearner():
         input_size = self.sim_world.get_state_size()
         output_size = self.sim_world.get_move_size()
         self.actor_network = ActorNetwork(input_size, output_size,
-                                          self.sim_world)
+                                          self.sim_world, self.weights_path)
 
     def initialize_mcts(self):
         """
@@ -45,11 +48,14 @@ class ReinforcementLearner():
         self.mcts = MonteCarloTreeSearch(board=self.sim_world,
                                          default_policy=self.actor_network)
 
-    def run(self):
+    def train(self):
         """
         Runs the traning algorithm to train the default policy neural network
         mapping states to actions.
         """
+        weights_loaded = self.actor_network.load_weights()
+        if weights_loaded:
+            return
         # Clear replay buffer RBUF
         self.rbuf_distributions = []
         self.rbuf_states = []
@@ -63,7 +69,6 @@ class ReinforcementLearner():
                 # Initialize mcts to a single root which represents s_init
                 # and run a simulated game from the root state.
                 action, distribution = self.mcts.mc_tree_search(state)
-                # print("Did one action")
                 # Append distribution to RBUF
                 self.rbuf_distributions.append(distribution)
                 self.rbuf_states.append(state)
@@ -86,8 +91,8 @@ class ReinforcementLearner():
             # Train ANET on random minibatch of cases from RBUF
             self.train_actor_network()
             if i % (self.num_games // self.save_interval) == 0:
-                # TODO: If i % (self.num_games//self.save_interval) == 0: save weights
-                pass
+                self.actor_network.save_weights()
+        self.actor_network.save_weights()
 
     def train_actor_network(self):
         """
@@ -95,7 +100,7 @@ class ReinforcementLearner():
         """
         self.actor_network.fit(train_x=np.array(self.rbuf_states),
                                train_y=np.array(self.rbuf_distributions),
-                               epochs=10)
+                               epochs=100)
 
     def test_nim(self):
         """
@@ -118,13 +123,18 @@ class ReinforcementLearner():
         Tests the trained hex policy.
         """
         state = self.sim_world.get_initial_state()
+        print(f"Board:\n{self.sim_world.get_board_readable(state)}\n")
         while not self.sim_world.state_is_final(state):
-            print(f"Board:\n{self.sim_world.get_board_readable()}\n")
             action, distr = self.actor_network.propose_action(
                 state, get_distribution=True)
+            # action, distr = self.mcts.mc_tree_search(state)
             print(f"Proposed action: {action}")
             print(f"Proposed action distribution: {distr}")
             state = self.sim_world.get_child_state(state, action)
+            final, winner = self.sim_world.state_is_final(state,
+                                                          get_winner=True)
+            print(f"Final state = {final}, winner pid = {winner}")
+            print(f"Board:\n{self.sim_world.get_board_readable(state)}\n")
 
 
 def main():
@@ -132,16 +142,20 @@ def main():
     Main function for running this python script.
     """
     # simworld
-    use_nim = True
+    use_nim = False
+    num_pieces = 14
+    max_take = 2
+    board_size = 4
     if use_nim:
-        num_pieces = 14
-        max_take = 2
         sim_world = GameNim(num_pieces, max_take)
+        reinforcement_learner = ReinforcementLearner(sim_world)
+        # reinforcement_learner.train()
+        reinforcement_learner.test_nim()
     else:
-        sim_world = GameHex(4)
-    reinforcement_learner = ReinforcementLearner(sim_world)
-    reinforcement_learner.run()
-    reinforcement_learner.test_nim()
+        sim_world = GameHex(board_size)
+        reinforcement_learner = ReinforcementLearner(sim_world)
+        reinforcement_learner.train()
+        reinforcement_learner.test_hex()
 
 
 if __name__ == "__main__":

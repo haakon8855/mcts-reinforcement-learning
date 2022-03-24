@@ -9,8 +9,10 @@ class ActorNetwork:
     Actor network for providing the default policy of the agent.
     """
 
-    def __init__(self, input_size: int, output_size: int, board):
+    def __init__(self, input_size: int, output_size: int, board,
+                 save_path: str):
         self.board = board
+        self.save_path = save_path
         self.learning_rate = 0.003
         self.model = ks.models.Sequential([
             ks.layers.Input(shape=input_size),
@@ -53,3 +55,22 @@ class ActorNetwork:
         Trains the network on a minibatch of cases.
         """
         self.model.fit(train_x, train_y, epochs)
+
+    def save_weights(self):
+        """
+        Saves the weights of the network to a file for loading at a later time.
+        """
+        self.model.save_weights(filepath=self.save_path)
+        print("Saved weights to file")
+
+    def load_weights(self):
+        """
+        Attempts to load weights from file. Returns True if successful
+        """
+        try:
+            self.model.load_weights(filepath=self.save_path)
+            print("Read weights successfully from file")
+            return True
+        except:  # pylint: disable=bare-except
+            print("Could not read weights from file")
+            return False
