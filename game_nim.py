@@ -59,7 +59,7 @@ class GameNim:
         if action_num >= num_discs:
             raise ValueError(f"""Given action not within legal parameters.
                  Must be greater than 1 and less than the current number 
-                 of pieces ({self.num_discs})""")
+                 of pieces ({num_discs})""")
         child_state_pieces = num_discs - (action_num + 1)
         child_state_pid = 1 - state[-1]
         return self.get_one_hot_state((child_state_pieces, child_state_pid))
