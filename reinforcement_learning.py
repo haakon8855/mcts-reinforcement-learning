@@ -4,6 +4,7 @@ import numpy as np
 
 from monte_carlo_ts import MonteCarloTreeSearch
 from game_nim import GameNim
+from game_hex import GameHex
 from actor_network import ActorNetwork
 
 
@@ -13,18 +14,14 @@ class ReinforcementLearner():
     (MCTS) to train the default policy (in this case an ANN).
     """
 
-    def __init__(self, num_games: int = 40, save_interval: int = 5):
+    def __init__(self, sim_world, num_games: int = 40, save_interval: int = 5):
         self.num_games = num_games
         self.save_interval = save_interval
         self.rbuf_distributions = []
         self.rbuf_states = []
         self.epsilon = 0.1
 
-        # simworld
-        self.num_pieces = 14
-        self.max_take = 2
-        self.sim_world = GameNim(num_pieces=self.num_pieces,
-                                 max_take=self.max_take)
+        self.sim_world = sim_world
 
         self.actor_network = None
         self.mcts = None
@@ -66,11 +63,12 @@ class ReinforcementLearner():
                 # Initialize mcts to a single root which represents s_init
                 # and run a simulated game from the root state.
                 action, distribution = self.mcts.mc_tree_search(state)
+                # print("Did one action")
                 # Append distribution to RBUF
                 self.rbuf_distributions.append(distribution)
                 self.rbuf_states.append(state)
                 # Choose actual move from D
-                chosen_action_index = np.argmax(distribution) + 1
+                chosen_action_index = np.argmax(distribution)
                 if np.random.random() < self.epsilon:
                     # Choose one random legal action
                     # Copy distribution
@@ -81,8 +79,7 @@ class ReinforcementLearner():
                     random_distribution = random_distribution / random_distribution.sum(
                     )
                     chosen_action_index = np.random.choice(
-                        len(random_distribution), 1,
-                        p=random_distribution)[0] + 1
+                        len(random_distribution), 1, p=random_distribution)[0]
                 action = self.sim_world.get_one_hot_action(chosen_action_index)
                 # Perform chosen action
                 state = self.sim_world.get_child_state(state, action)
@@ -104,7 +101,7 @@ class ReinforcementLearner():
         """
         Tests the trained nim policy.
         """
-        for i in range(1, self.num_pieces + 1):
+        for i in range(1, self.sim_world.num_pieces + 1):
             state = self.sim_world.get_one_hot_state((i, 0))
             # Print state
             num_state = self.sim_world.get_num_discs_from_one_hot(state)
@@ -116,12 +113,33 @@ class ReinforcementLearner():
             print(f"Proposed action: {action}")
             print(f"Proposed action distribution: {distr}")
 
+    def test_hex(self):
+        """
+        Tests the trained hex policy.
+        """
+        state = self.sim_world.get_initial_state()
+        while not self.sim_world.state_is_final(state):
+            print(f"Board:\n{self.sim_world.get_board_readable()}\n")
+            action, distr = self.actor_network.propose_action(
+                state, get_distribution=True)
+            print(f"Proposed action: {action}")
+            print(f"Proposed action distribution: {distr}")
+            state = self.sim_world.get_child_state(state, action)
+
 
 def main():
     """
     Main function for running this python script.
     """
-    reinforcement_learner = ReinforcementLearner()
+    # simworld
+    use_nim = True
+    if use_nim:
+        num_pieces = 14
+        max_take = 2
+        sim_world = GameNim(num_pieces, max_take)
+    else:
+        sim_world = GameHex(4)
+    reinforcement_learner = ReinforcementLearner(sim_world)
     reinforcement_learner.run()
     reinforcement_learner.test_nim()
 

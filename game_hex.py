@@ -54,7 +54,7 @@ class GameHex:
             if cell == 0.0:
                 action = np.zeros(self.board_size**2)
                 action[i] = 1.0
-                legal_actions.append(action)
+                legal_actions.append(tuple(action))
         return legal_actions
 
     def get_child_state(self, state, action):
@@ -126,7 +126,8 @@ class GameHex:
         position = np.array([xpos, ypos])
         for offset in self.neighbor_offsets:
             pos_and_offset = position + offset
-            if np.any(pos_and_offset < 0):
+            if np.any(pos_and_offset < 0) or np.any(
+                    pos_and_offset >= self.board_size):
                 continue
             pos_and_offset = tuple(pos_and_offset)
             if board[pos_and_offset] == player and visited[pos_and_offset] == 0:
