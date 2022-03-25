@@ -1,2 +1,2 @@
-model_checkpoint_path: "nim"
-all_model_checkpoint_paths: "nim"
+model_checkpoint_path: "hex5"
+all_model_checkpoint_paths: "hex5"
