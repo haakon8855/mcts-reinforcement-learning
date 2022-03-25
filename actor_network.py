@@ -14,13 +14,13 @@ class ActorNetwork:
         self.board = board
         self.save_path = save_path
         self.learning_rate = 0.003
+        self.save_count = 0
         self.model = ks.models.Sequential([
             ks.layers.Input(shape=input_size),
             ks.layers.Flatten(),
-            ks.layers.Dense(300, activation='relu'),
-            ks.layers.Dense(300, activation='relu'),
-            ks.layers.Dense(300, activation='relu'),
-            ks.layers.Dense(300, activation='relu'),
+            ks.layers.Dense(200, activation='relu'),
+            ks.layers.Dense(200, activation='relu'),
+            ks.layers.Dense(100, activation='relu'),
             ks.layers.Dense(output_size, activation='softmax'),
         ])
         self.compile_network()
@@ -34,7 +34,7 @@ class ActorNetwork:
             loss=ks.losses.CategoricalCrossentropy(),
         )
 
-    def propose_action(self, state, get_distribution=False):
+    def propose_action(self, state, get_distribution=False, epsilon=0):
         """
         Returns a proposed action given a state.
         """
@@ -43,8 +43,17 @@ class ActorNetwork:
         state_as_np = np.array(state).reshape(1, -1)
         proposed_action_distribution = self.model(
             state_as_np).numpy() * legal_actions_filter
-        proposed_action_num = self.board.get_action_num_from_one_hot(
-            proposed_action_distribution)
+        if np.random.random() < epsilon:
+            uniform_distribution = proposed_action_distribution.copy()[0]
+            uniform_distribution[uniform_distribution > 0] = 1
+            uniform_distribution = uniform_distribution / uniform_distribution.sum(
+            )
+            proposed_action_num = np.random.choice(len(uniform_distribution),
+                                                   1,
+                                                   p=uniform_distribution)[0]
+        else:
+            proposed_action_num = self.board.get_action_num_from_one_hot(
+                proposed_action_distribution)
         proposed_action = self.board.get_one_hot_action(proposed_action_num)
         if get_distribution:
             return proposed_action, proposed_action_distribution
@@ -60,7 +69,8 @@ class ActorNetwork:
         """
         Saves the weights of the network to a file for loading at a later time.
         """
-        self.model.save_weights(filepath=self.save_path)
+        self.model.save_weights(filepath=self.save_path + str(self.save_count))
+        self.save_count += 1
         print("Saved weights to file")
 
     def load_weights(self):
