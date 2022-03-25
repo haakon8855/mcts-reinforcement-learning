@@ -78,7 +78,8 @@ class ActorNetwork:
         Attempts to load weights from file. Returns True if successful
         """
         try:
-            self.model.load_weights(filepath=self.save_path)
+            self.model.load_weights(filepath=self.save_path +
+                                    str(self.save_count))
             print("Read weights successfully from file")
             return True
         except:  # pylint: disable=bare-except
