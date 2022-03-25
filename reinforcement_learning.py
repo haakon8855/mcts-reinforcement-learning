@@ -14,12 +14,16 @@ class ReinforcementLearner():
     (MCTS) to train the default policy (in this case an ANN).
     """
 
-    def __init__(self, sim_world, num_games: int = 40, save_interval: int = 5):
+    def __init__(self,
+                 sim_world,
+                 num_games: int = 100,
+                 save_interval: int = 5):
         self.num_games = num_games
         self.save_interval = save_interval
         self.rbuf_distributions = []
         self.rbuf_states = []
-        self.epsilon = 0.1
+        self.epsilon = 0.07
+        self.batch_size = 200
 
         self.sim_world = sim_world
 
@@ -56,6 +60,8 @@ class ReinforcementLearner():
         weights_loaded = self.actor_network.load_weights()
         if weights_loaded:
             return
+        # Save initial weights to file
+        self.actor_network.save_weights()
         # Clear replay buffer RBUF
         self.rbuf_distributions = []
         self.rbuf_states = []
@@ -88,9 +94,10 @@ class ReinforcementLearner():
                 action = self.sim_world.get_one_hot_action(chosen_action_index)
                 # Perform chosen action
                 state = self.sim_world.get_child_state(state, action)
+            print(f"Episode {i}")
             # Train ANET on random minibatch of cases from RBUF
             self.train_actor_network()
-            if i % (self.num_games // self.save_interval) == 0:
+            if i % (self.num_games // self.save_interval) == 0 and i != 0:
                 self.actor_network.save_weights()
         self.actor_network.save_weights()
 
@@ -98,9 +105,15 @@ class ReinforcementLearner():
         """
         Trains the actor network on a minibatch of cases from RBUF.
         """
-        self.actor_network.fit(train_x=np.array(self.rbuf_states),
-                               train_y=np.array(self.rbuf_distributions),
-                               epochs=100)
+        random_indices = np.random.default_rng().choice(
+            len(self.rbuf_distributions),
+            min(self.batch_size, len(self.rbuf_distributions)),
+            replace=False)
+        minibatch_states = np.array(self.rbuf_states)[random_indices]
+        minibatch_distr = np.array(self.rbuf_distributions)[random_indices]
+        self.actor_network.fit(train_x=np.array(minibatch_states),
+                               train_y=np.array(minibatch_distr),
+                               epochs=1000)
 
     def test_nim(self):
         """
