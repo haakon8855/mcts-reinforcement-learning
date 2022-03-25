@@ -11,9 +11,10 @@ class MonteCarloTreeSearch:
     def __init__(self,
                  board,
                  default_policy,
-                 simulations: int = 200,
+                 simulations: int = 50,
                  default_exp_const: int = 1):
         self.board = board  # Of type simworld
+        self.epsilon = 0.2
         self.default_policy = default_policy
         self.default_exp_const = default_exp_const
         self.simulations = simulations  # M-value for number of simulations
@@ -78,10 +79,12 @@ class MonteCarloTreeSearch:
         """
         first_action = None
         if not self.board.state_is_final(self.state):
-            first_action = self.default_policy.propose_action(self.state)
+            first_action = self.default_policy.propose_action(
+                self.state, epsilon=self.epsilon)
             self.state = self.board.get_child_state(self.state, first_action)
         while not self.board.state_is_final(self.state):
-            action = self.default_policy.propose_action(self.state)
+            action = self.default_policy.propose_action(self.state,
+                                                        epsilon=self.epsilon)
             self.state = self.board.get_child_state(self.state, action)
         return self.board.winner_is_p0(self.state), first_action
 
