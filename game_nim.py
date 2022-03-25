@@ -11,6 +11,7 @@ class GameNim:
     def __init__(self, num_pieces: int = 10, max_take: int = 2):
         self.num_pieces = num_pieces  # N, number of pieces on the board
         self.max_take = max_take  # K, maximium amount of pieces allowed to take
+        self.identifier = "nim"
 
     def get_initial_state(self):
         """

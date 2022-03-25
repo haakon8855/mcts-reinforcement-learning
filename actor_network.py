@@ -65,21 +65,23 @@ class ActorNetwork:
         """
         self.model.fit(train_x, train_y, epochs)
 
-    def save_weights(self):
+    def save_weights(self, save_count):
         """
         Saves the weights of the network to a file for loading at a later time.
         """
-        self.model.save_weights(filepath=self.save_path + str(self.save_count))
-        self.save_count += 1
+        self.model.save_weights(filepath=self.save_path + str(save_count))
         print("Saved weights to file")
 
-    def load_weights(self):
+    def load_weights(self, save_count=None):
         """
         Attempts to load weights from file. Returns True if successful
         """
         try:
-            self.model.load_weights(filepath=self.save_path +
-                                    str(self.save_count))
+            if save_count is None:
+                self.model.load_weights(filepath=self.save_path)
+            else:
+                self.model.load_weights(filepath=self.save_path +
+                                        str(save_count))
             print("Read weights successfully from file")
             return True
         except:  # pylint: disable=bare-except

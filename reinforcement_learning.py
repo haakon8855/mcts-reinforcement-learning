@@ -13,13 +13,11 @@ class ReinforcementLearner():
     A reinforcement learning algorithm implementing Monte Carlo Tree Search
     (MCTS) to train the default policy (in this case an ANN).
     """
+    weights_path = "model/actor/"
+    num_policies = 6
 
-    def __init__(self,
-                 sim_world,
-                 num_games: int = 100,
-                 save_interval: int = 5):
+    def __init__(self, sim_world, num_games: int = 100):
         self.num_games = num_games
-        self.save_interval = save_interval
         self.rbuf_distributions = []
         self.rbuf_states = []
         self.epsilon = 0.07
@@ -27,10 +25,9 @@ class ReinforcementLearner():
 
         self.sim_world = sim_world
 
-        self.weights_path = "model/actor/nim"
-        if isinstance(self.sim_world, GameHex):
-            self.weights_path = "model/actor/hex"
+        self.weights_path = ReinforcementLearner.weights_path + self.sim_world.identifier
         self.actor_network = None
+        self.save_count = 0
         self.mcts = None
         self.initialize_actor_network()
         self.initialize_mcts()
@@ -57,11 +54,12 @@ class ReinforcementLearner():
         Runs the traning algorithm to train the default policy neural network
         mapping states to actions.
         """
-        weights_loaded = self.actor_network.load_weights()
+        weights_loaded = self.actor_network.load_weights(self.save_count)
         if weights_loaded:
             return
         # Save initial weights to file
-        self.actor_network.save_weights()
+        self.actor_network.save_weights(self.save_count)
+        self.save_count += 1
         # Clear replay buffer RBUF
         self.rbuf_distributions = []
         self.rbuf_states = []
@@ -97,9 +95,12 @@ class ReinforcementLearner():
             print(f"Episode {i}")
             # Train ANET on random minibatch of cases from RBUF
             self.train_actor_network()
-            if i % (self.num_games // self.save_interval) == 0 and i != 0:
-                self.actor_network.save_weights()
-        self.actor_network.save_weights()
+            if i % (self.num_games //
+                    (ReinforcementLearner.num_policies - 1)) == 0 and i != 0:
+                self.actor_network.save_weights(self.save_count)
+                self.save_count += 1
+        self.actor_network.save_weights(self.save_count)
+        self.save_count += 1
 
     def train_actor_network(self):
         """

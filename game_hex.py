@@ -18,6 +18,7 @@ class GameHex:
             [1, -1],
             [1, 0],
         ])
+        self.identifier = "hex"
 
     def get_initial_state(self):
         """
