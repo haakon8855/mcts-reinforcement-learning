@@ -162,7 +162,7 @@ def main():
     if use_nim:
         sim_world = GameNim(num_pieces, max_take)
         reinforcement_learner = ReinforcementLearner(sim_world)
-        # reinforcement_learner.train()
+        reinforcement_learner.train()
         reinforcement_learner.test_nim()
     else:
         sim_world = GameHex(board_size)

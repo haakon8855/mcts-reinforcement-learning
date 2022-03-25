@@ -145,7 +145,6 @@ class GameHex:
         """
         Return 1 if the winner of this game is player 1, -1 otherwise.
         """
-        # TODO: Fix this to use self.state_is_final instead
         return [-1, 1][self.state_is_final(state)
                        and not self.p0_to_play(state)]
 
