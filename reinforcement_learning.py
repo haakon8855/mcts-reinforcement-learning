@@ -16,7 +16,7 @@ class ReinforcementLearner():
     weights_path = "model/actor/"
     num_policies = 6
 
-    def __init__(self, sim_world, num_games: int = 100):
+    def __init__(self, sim_world, num_games: int = 20):
         self.num_games = num_games
         self.rbuf_distributions = []
         self.rbuf_states = []
@@ -92,9 +92,9 @@ class ReinforcementLearner():
                 action = self.sim_world.get_one_hot_action(chosen_action_index)
                 # Perform chosen action
                 state = self.sim_world.get_child_state(state, action)
-            print(f"Episode {i}")
             # Train ANET on random minibatch of cases from RBUF
             self.train_actor_network()
+            print(f"Episode {i}")
             if i % (self.num_games //
                     (ReinforcementLearner.num_policies - 1)) == 0 and i != 0:
                 self.actor_network.save_weights(self.save_count)
@@ -114,7 +114,7 @@ class ReinforcementLearner():
         minibatch_distr = np.array(self.rbuf_distributions)[random_indices]
         self.actor_network.fit(train_x=np.array(minibatch_states),
                                train_y=np.array(minibatch_distr),
-                               epochs=1000)
+                               epochs=30)
 
     def test_nim(self):
         """
@@ -141,7 +141,6 @@ class ReinforcementLearner():
         while not self.sim_world.state_is_final(state):
             action, distr = self.actor_network.propose_action(
                 state, get_distribution=True)
-            # action, distr = self.mcts.mc_tree_search(state)
             print(f"Proposed action: {action}")
             print(f"Proposed action distribution: {distr}")
             state = self.sim_world.get_child_state(state, action)
@@ -149,6 +148,40 @@ class ReinforcementLearner():
                                                           get_winner=True)
             print(f"Final state = {final}, winner pid = {winner}")
             print(f"Board:\n{self.sim_world.get_board_readable(state)}\n")
+
+    def play_hex(self):
+        """
+        Play hex agains the machine.
+        """
+        weights_loaded = self.actor_network.load_weights(5)
+        state = self.sim_world.get_initial_state()
+        print(f"Board:\n{self.sim_world.get_board_readable(state)}\n")
+        self.sim_world.show_visible_board(state)
+        while not self.sim_world.state_is_final(state):
+
+            action, distr = self.actor_network.propose_action(
+                state, get_distribution=True)
+            print(f"Proposed action: {action}")
+            print(f"Proposed action distribution: {distr}")
+            state = self.sim_world.get_child_state(state, action)
+            final, winner = self.sim_world.state_is_final(state,
+                                                          get_winner=True)
+            print(f"Final state = {final}, winner pid = {winner}")
+            print(f"Board:\n{self.sim_world.get_board_readable(state)}\n")
+            self.sim_world.show_visible_board(state)
+            if final:
+                break
+
+            legal_actions = self.sim_world.get_legal_actions(
+                self.sim_world.get_initial_state())
+            user_action = int(input("Please select action: "))
+            state = self.sim_world.get_child_state(state,
+                                                   legal_actions[user_action])
+            final, winner = self.sim_world.state_is_final(state,
+                                                          get_winner=True)
+            print(f"Final state = {final}, winner pid = {winner}")
+            print(f"Board:\n{self.sim_world.get_board_readable(state)}\n")
+            self.sim_world.show_visible_board(state)
 
 
 def main():
@@ -169,7 +202,7 @@ def main():
         sim_world = GameHex(board_size)
         reinforcement_learner = ReinforcementLearner(sim_world)
         reinforcement_learner.train()
-        reinforcement_learner.test_hex()
+        reinforcement_learner.play_hex()
 
 
 if __name__ == "__main__":

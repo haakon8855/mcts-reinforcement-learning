@@ -63,7 +63,7 @@ class ActorNetwork:
         """
         Trains the network on a minibatch of cases.
         """
-        self.model.fit(train_x, train_y, epochs)
+        self.model.fit(train_x, train_y, epochs=epochs)
 
     def save_weights(self, save_count):
         """

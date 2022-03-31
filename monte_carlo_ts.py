@@ -11,7 +11,7 @@ class MonteCarloTreeSearch:
     def __init__(self,
                  board,
                  default_policy,
-                 simulations: int = 50,
+                 simulations: int = 1500,
                  default_exp_const: int = 1):
         self.board = board  # Of type simworld
         self.epsilon = 0.2
