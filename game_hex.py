@@ -1,6 +1,8 @@
 """Haakon8855"""
 
 import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
 
 
 class GameHex:
@@ -83,6 +85,7 @@ class GameHex:
         board = self.get_board_readable(state)
         p0_has_path = self.player_has_path(board, 1)
         board = board.T
+        # TODO: dont check if p0 has won
         p1_has_path = self.player_has_path(board, 2)
         is_final = p0_has_path or p1_has_path
         if get_winner:
@@ -97,6 +100,7 @@ class GameHex:
         Helper method for self.state_is_final. Returns wheter the given player
         has a path from left to right.
         """
+        # TODO: add neighbors to stack immediately and pop when visiting
         visited = np.zeros((board.shape))
         stack = []
         start = board[:, 0]
@@ -191,6 +195,52 @@ class GameHex:
         board[p1_pieces] = 2
         return board.reshape((self.board_size, self.board_size))
 
+    def show_visible_board(self, state):
+        """
+        Shows a visual representation of the board state using matplotlib.
+        """
+        plt.clf()
+        board = self.get_board_readable(state)
+        board = board.flatten()
+        coords = {}
+        graph = nx.Graph()
+        neighbor_offsets = [-1, -self.board_size, -self.board_size + 1]
+        pivot = ((self.board_size - 1) / 2, (self.board_size - 1) / 2)
+        angle = 5 * np.pi / 4
+        possible_colors = ["lightgray", "black", "red"]
+        colors = []
+        for i in range(self.board_size):
+            for j in range(self.board_size):
+                key = i * self.board_size + j
+                point = (i, j)
+                rotated_point = GameHex.rotate_point(point, pivot, angle)
+                if key != 0:
+                    for k, offset in enumerate(neighbor_offsets):
+                        if key + offset >= 0 and not (
+                                k == 0 and key % self.board_size == 0
+                        ) and not (k == 2 and
+                                   (key + 1) % self.board_size == 0):
+                            graph.add_edge(key + offset, key)
+                coords[key] = rotated_point
+                color = possible_colors[int(board[key])]
+                colors.append(color)
+
+        nx.draw(graph, pos=coords, node_color=colors)
+        plt.savefig("figs/graph.png")
+
+    @staticmethod
+    def rotate_point(point, pivot, angle):
+        """
+        Rotates a point around another point (rot_point) a given angle.
+        """
+        sin = np.sin(angle)
+        cos = np.cos(angle)
+        point = (point[0] - pivot[0], point[1] - pivot[1])
+        new_point = (point[0] * cos - point[1] * sin,
+                     point[0] * sin + point[1] * cos)
+        new_point = (new_point[0] + pivot[0], new_point[1] + pivot[1])
+        return new_point
+
     def __str__(self):
         return f"Board size is {self.board_size}x{self.board_size}."
 
@@ -201,23 +251,41 @@ def main():
     """
     simworld = GameHex(4)
     state = simworld.get_initial_state()
+    board_str = simworld.get_board_readable(state)
+    simworld.show_visible_board(state)
 
     legal_actions = simworld.get_legal_actions(state)
     state = simworld.get_child_state(state, legal_actions[4])
+    board_str = simworld.get_board_readable(state)
+    simworld.show_visible_board(state)
     legal_actions = simworld.get_legal_actions(state)
     state = simworld.get_child_state(state, legal_actions[0])
+    board_str = simworld.get_board_readable(state)
+    simworld.show_visible_board(state)
     legal_actions = simworld.get_legal_actions(state)
     state = simworld.get_child_state(state, legal_actions[0])
+    board_str = simworld.get_board_readable(state)
+    simworld.show_visible_board(state)
     legal_actions = simworld.get_legal_actions(state)
     state = simworld.get_child_state(state, legal_actions[12])
+    board_str = simworld.get_board_readable(state)
+    simworld.show_visible_board(state)
     legal_actions = simworld.get_legal_actions(state)
     state = simworld.get_child_state(state, legal_actions[3])
+    board_str = simworld.get_board_readable(state)
+    simworld.show_visible_board(state)
     legal_actions = simworld.get_legal_actions(state)
     state = simworld.get_child_state(state, legal_actions[7])
+    board_str = simworld.get_board_readable(state)
+    simworld.show_visible_board(state)
     legal_actions = simworld.get_legal_actions(state)
     state = simworld.get_child_state(state, legal_actions[1])
+    board_str = simworld.get_board_readable(state)
+    simworld.show_visible_board(state)
     legal_actions = simworld.get_legal_actions(state)
     state = simworld.get_child_state(state, legal_actions[-1])
+    board_str = simworld.get_board_readable(state)
+    simworld.show_visible_board(state)
     legal_actions = simworld.get_legal_actions(state)
     state = simworld.get_child_state(state, legal_actions[1])
 
@@ -241,6 +309,8 @@ def main():
     board_str = simworld.get_board_readable(state)
     print(f"Board: \n{board_str}\n")
     print(f"Won? \n{simworld.state_is_final(state, get_winner=True)}\n")
+    board_str = simworld.get_board_readable(state)
+    simworld.show_visible_board(state)
 
 
 if __name__ == "__main__":
