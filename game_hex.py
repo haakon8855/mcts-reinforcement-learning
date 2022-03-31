@@ -85,8 +85,10 @@ class GameHex:
         board = self.get_board_readable(state)
         p0_has_path = self.player_has_path(board, 1)
         board = board.T
-        # TODO: dont check if p0 has won
-        p1_has_path = self.player_has_path(board, 2)
+        if p0_has_path:
+            p1_has_path = False
+        else:
+            p1_has_path = self.player_has_path(board, 2)
         is_final = p0_has_path or p1_has_path
         if get_winner:
             winner_pid = None
@@ -100,7 +102,7 @@ class GameHex:
         Helper method for self.state_is_final. Returns wheter the given player
         has a path from left to right.
         """
-        # TODO: add neighbors to stack immediately and pop when visiting
+        # Maybedo: add neighbors to stack immediately and pop when visiting
         visited = np.zeros((board.shape))
         stack = []
         start = board[:, 0]

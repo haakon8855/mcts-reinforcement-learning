@@ -154,6 +154,9 @@ class ReinforcementLearner():
         Play hex agains the machine.
         """
         weights_loaded = self.actor_network.load_weights(5)
+        if not weights_loaded:
+            print("Could not load weights, returning")
+            return
         state = self.sim_world.get_initial_state()
         print(f"Board:\n{self.sim_world.get_board_readable(state)}\n")
         self.sim_world.show_visible_board(state)
