@@ -44,33 +44,30 @@ class Tournament():
         Plays one match between player at index_a and player at index_b,
         two games where each player gets to start once.
         """
-        player_a = self.policies[index_a]
-        player_b = self.policies[index_b]
-        if self.play_one_game(player_a, player_b) == 0:
-            self.policies_win_count[index_a] += 1
-        else:
-            self.policies_win_count[index_b] += 1
-        if self.play_one_game(player_b, player_a) == 0:
-            self.policies_win_count[index_b] += 1
-        else:
-            self.policies_win_count[index_a] += 1
+        self.play_one_game(index_a, index_b)
+        self.play_one_game(index_b, index_a)
 
-    def play_one_game(self, player0, player1):
+    def play_one_game(self, index_0, index_1):
         """
         Play one hex game between two policies.
         """
+        player_0 = self.policies[index_0]
+        player_1 = self.policies[index_1]
+
         state = self.sim_world.get_initial_state()
         while True:
-            action = player0.propose_action(state)
+            action = player_0.propose_action(state)
             state = self.sim_world.get_child_state(state, action)
             final = self.sim_world.state_is_final(state)
             if final:
-                return 0
-            action = player1.propose_action(state)
+                self.policies_win_count[index_0] += 1
+                return
+            action = player_1.propose_action(state)
             state = self.sim_world.get_child_state(state, action)
             final = self.sim_world.state_is_final(state)
             if final:
-                return 1
+                self.policies_win_count[index_1] += 1
+                return
 
 
 def main():
