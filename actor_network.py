@@ -41,8 +41,8 @@ class ActorNetwork:
         legal_actions = self.board.get_legal_actions(state)
         legal_actions_filter = np.array(legal_actions).sum(axis=0)
         state_as_np = np.array(state).reshape(1, -1)
-        proposed_action_distribution = self.model(
-            state_as_np).numpy() * legal_actions_filter
+        proposed_action_distribution = (self.model(state_as_np).numpy() +
+                                        0.00001) * legal_actions_filter
         if np.random.random() < epsilon:
             uniform_distribution = proposed_action_distribution.copy()[0]
             uniform_distribution[uniform_distribution > 0] = 1

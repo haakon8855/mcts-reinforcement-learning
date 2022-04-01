@@ -20,6 +20,7 @@ class GameHex:
             [1, -1],
             [1, 0],
         ])
+        self.player_to_begin = 0
         self.identifier = "hex"
 
     def get_initial_state(self):
@@ -29,7 +30,8 @@ class GameHex:
         pid represented as [x, x] appended to it.
         """
         board = np.zeros((self.board_size, self.board_size, 2))
-        pid = [1.0, 0.0]
+        pid = [[1.0, 0.0], [0.0, 1.0]][self.player_to_begin]
+        self.player_to_begin = 1 - self.player_to_begin
         return tuple(board.flatten()) + tuple(pid)
 
     def get_state_size(self):
@@ -102,7 +104,6 @@ class GameHex:
         Helper method for self.state_is_final. Returns wheter the given player
         has a path from left to right.
         """
-        # Maybedo: add neighbors to stack immediately and pop when visiting
         visited = np.zeros((board.shape))
         stack = []
         start = board[:, 0]
@@ -112,25 +113,23 @@ class GameHex:
                 visited[i, 0] = 1
                 stack.append((i, 0))
                 while len(stack) > 0:
-                    current = stack[-1]
+                    current = stack.pop()
                     visited[current] = 1
                     if current[1] == self.board_size - 1:
                         return True
-                    neighbor = self.get_unvisited_neighbor_of_player(
+                    neighbors = self.get_unvisited_neighbors(
                         board, visited, current[0], current[1])
-                    if neighbor is None:
-                        stack.pop()
-                        continue
-                    stack.append(neighbor)
+                    stack = stack + neighbors
         return False
 
-    def get_unvisited_neighbor_of_player(self, board, visited, xpos, ypos):
+    def get_unvisited_neighbors(self, board, visited, xpos, ypos):
         """
         Returns the coordinates of any unvisited neighbor of
         the current square.
         """
         player = board[xpos, ypos]
         position = np.array([xpos, ypos])
+        neighbors = []
         for offset in self.neighbor_offsets:
             pos_and_offset = position + offset
             if np.any(pos_and_offset < 0) or np.any(
@@ -138,8 +137,8 @@ class GameHex:
                 continue
             pos_and_offset = tuple(pos_and_offset)
             if board[pos_and_offset] == player and visited[pos_and_offset] == 0:
-                return pos_and_offset
-        return None
+                neighbors.append(pos_and_offset)
+        return neighbors
 
     def p0_to_play(self, state):
         """
@@ -259,59 +258,87 @@ def main():
     legal_actions = simworld.get_legal_actions(state)
     state = simworld.get_child_state(state, legal_actions[4])
     board_str = simworld.get_board_readable(state)
+    print(f"Board: \n{board_str}\n")
+    print(f"Won? \n{simworld.state_is_final(state, get_winner=True)}\n")
     simworld.show_visible_board(state)
     legal_actions = simworld.get_legal_actions(state)
     state = simworld.get_child_state(state, legal_actions[0])
     board_str = simworld.get_board_readable(state)
+    print(f"Board: \n{board_str}\n")
+    print(f"Won? \n{simworld.state_is_final(state, get_winner=True)}\n")
     simworld.show_visible_board(state)
     legal_actions = simworld.get_legal_actions(state)
     state = simworld.get_child_state(state, legal_actions[0])
     board_str = simworld.get_board_readable(state)
+    print(f"Board: \n{board_str}\n")
+    print(f"Won? \n{simworld.state_is_final(state, get_winner=True)}\n")
     simworld.show_visible_board(state)
     legal_actions = simworld.get_legal_actions(state)
     state = simworld.get_child_state(state, legal_actions[12])
     board_str = simworld.get_board_readable(state)
+    print(f"Board: \n{board_str}\n")
+    print(f"Won? \n{simworld.state_is_final(state, get_winner=True)}\n")
     simworld.show_visible_board(state)
     legal_actions = simworld.get_legal_actions(state)
     state = simworld.get_child_state(state, legal_actions[3])
     board_str = simworld.get_board_readable(state)
+    print(f"Board: \n{board_str}\n")
+    print(f"Won? \n{simworld.state_is_final(state, get_winner=True)}\n")
     simworld.show_visible_board(state)
     legal_actions = simworld.get_legal_actions(state)
     state = simworld.get_child_state(state, legal_actions[7])
     board_str = simworld.get_board_readable(state)
+    print(f"Board: \n{board_str}\n")
+    print(f"Won? \n{simworld.state_is_final(state, get_winner=True)}\n")
     simworld.show_visible_board(state)
     legal_actions = simworld.get_legal_actions(state)
     state = simworld.get_child_state(state, legal_actions[1])
-    board_str = simworld.get_board_readable(state)
-    simworld.show_visible_board(state)
-    legal_actions = simworld.get_legal_actions(state)
-    state = simworld.get_child_state(state, legal_actions[-1])
-    board_str = simworld.get_board_readable(state)
-    simworld.show_visible_board(state)
-    legal_actions = simworld.get_legal_actions(state)
-    state = simworld.get_child_state(state, legal_actions[1])
-
-    # legal_actions = simworld.get_legal_actions(state)
-    # state = simworld.get_child_state(state, legal_actions[4])
-    # legal_actions = simworld.get_legal_actions(state)
-    # state = simworld.get_child_state(state, legal_actions[1])
-    # legal_actions = simworld.get_legal_actions(state)
-    # state = simworld.get_child_state(state, legal_actions[5])
-    # legal_actions = simworld.get_legal_actions(state)
-    # state = simworld.get_child_state(state, legal_actions[3])
-    # legal_actions = simworld.get_legal_actions(state)
-    # state = simworld.get_child_state(state, legal_actions[6])
-    # legal_actions = simworld.get_legal_actions(state)
-    # state = simworld.get_child_state(state, legal_actions[5])
-    # legal_actions = simworld.get_legal_actions(state)
-    # state = simworld.get_child_state(state, legal_actions[0])
-    # legal_actions = simworld.get_legal_actions(state)
-    # state = simworld.get_child_state(state, legal_actions[6])
-
     board_str = simworld.get_board_readable(state)
     print(f"Board: \n{board_str}\n")
     print(f"Won? \n{simworld.state_is_final(state, get_winner=True)}\n")
+    simworld.show_visible_board(state)
+    legal_actions = simworld.get_legal_actions(state)
+    state = simworld.get_child_state(state, legal_actions[0])
     board_str = simworld.get_board_readable(state)
+    print(f"Board: \n{board_str}\n")
+    print(f"Won? \n{simworld.state_is_final(state, get_winner=True)}\n")
+    simworld.show_visible_board(state)
+    legal_actions = simworld.get_legal_actions(state)
+    state = simworld.get_child_state(state, legal_actions[5])
+    board_str = simworld.get_board_readable(state)
+    print(f"Board: \n{board_str}\n")
+    print(f"Won? \n{simworld.state_is_final(state, get_winner=True)}\n")
+    simworld.show_visible_board(state)
+    legal_actions = simworld.get_legal_actions(state)
+    state = simworld.get_child_state(state, legal_actions[0])
+    board_str = simworld.get_board_readable(state)
+    print(f"Board: \n{board_str}\n")
+    print(f"Won? \n{simworld.state_is_final(state, get_winner=True)}\n")
+    simworld.show_visible_board(state)
+    legal_actions = simworld.get_legal_actions(state)
+    state = simworld.get_child_state(state, legal_actions[4])
+    board_str = simworld.get_board_readable(state)
+    print(f"Board: \n{board_str}\n")
+    print(f"Won? \n{simworld.state_is_final(state, get_winner=True)}\n")
+    simworld.show_visible_board(state)
+    legal_actions = simworld.get_legal_actions(state)
+    state = simworld.get_child_state(state, legal_actions[2])
+    board_str = simworld.get_board_readable(state)
+    print(f"Board: \n{board_str}\n")
+    print(f"Won? \n{simworld.state_is_final(state, get_winner=True)}\n")
+    simworld.show_visible_board(state)
+    legal_actions = simworld.get_legal_actions(state)
+    state = simworld.get_child_state(state, legal_actions[3])
+    board_str = simworld.get_board_readable(state)
+    print(f"Board: \n{board_str}\n")
+    print(f"Won? \n{simworld.state_is_final(state, get_winner=True)}\n")
+    simworld.show_visible_board(state)
+    legal_actions = simworld.get_legal_actions(state)
+    state = simworld.get_child_state(state, legal_actions[2])
+    board_str = simworld.get_board_readable(state)
+    print(f"Board: \n{board_str}\n")
+    print(f"Won? \n{simworld.state_is_final(state, get_winner=True)}\n")
+
     simworld.show_visible_board(state)
 
 

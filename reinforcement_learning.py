@@ -13,10 +13,10 @@ class ReinforcementLearner():
     A reinforcement learning algorithm implementing Monte Carlo Tree Search
     (MCTS) to train the default policy (in this case an ANN).
     """
-    weights_path = "model/actor/"
-    num_policies = 6
+    weights_path = "model/actor_var_start/"
+    num_policies = 5
 
-    def __init__(self, sim_world, num_games: int = 20):
+    def __init__(self, sim_world, num_games: int = 100):
         self.num_games = num_games
         self.rbuf_distributions = []
         self.rbuf_states = []
@@ -72,7 +72,10 @@ class ReinforcementLearner():
             while not self.sim_world.state_is_final(state):
                 # Initialize mcts to a single root which represents s_init
                 # and run a simulated game from the root state.
-                action, distribution = self.mcts.mc_tree_search(state)
+                try:
+                    action, distribution = self.mcts.mc_tree_search(state)
+                except ValueError:
+                    break
                 # Append distribution to RBUF
                 self.rbuf_distributions.append(distribution)
                 self.rbuf_states.append(state)
@@ -81,7 +84,7 @@ class ReinforcementLearner():
                 if np.random.random() < self.epsilon:
                     # Choose one random legal action
                     # Copy distribution
-                    random_distribution = distribution.copy()
+                    random_distribution = distribution.copy() + 0.00001
                     # Set all probabilities larger than 0 to 1
                     random_distribution[random_distribution > 0] = 1
                     # Normalize vector to choose uniformly between legal actions
@@ -91,7 +94,10 @@ class ReinforcementLearner():
                         len(random_distribution), 1, p=random_distribution)[0]
                 action = self.sim_world.get_one_hot_action(chosen_action_index)
                 # Perform chosen action
-                state = self.sim_world.get_child_state(state, action)
+                try:
+                    state = self.sim_world.get_child_state(state, action)
+                except ValueError:
+                    break
             # Train ANET on random minibatch of cases from RBUF
             self.train_actor_network()
             print(f"Episode {i}")
@@ -114,7 +120,7 @@ class ReinforcementLearner():
         minibatch_distr = np.array(self.rbuf_distributions)[random_indices]
         self.actor_network.fit(train_x=np.array(minibatch_states),
                                train_y=np.array(minibatch_distr),
-                               epochs=30)
+                               epochs=100)
 
     def test_nim(self):
         """
@@ -153,7 +159,7 @@ class ReinforcementLearner():
         """
         Play hex agains the machine.
         """
-        weights_loaded = self.actor_network.load_weights(5)
+        weights_loaded = self.actor_network.load_weights(2)
         if not weights_loaded:
             print("Could not load weights, returning")
             return

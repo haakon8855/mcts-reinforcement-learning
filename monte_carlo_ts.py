@@ -11,15 +11,15 @@ class MonteCarloTreeSearch:
     def __init__(self,
                  board,
                  default_policy,
-                 simulations: int = 1500,
+                 simulations: int = 500,
                  default_exp_const: int = 1):
         self.board = board  # Of type simworld
-        self.epsilon = 0.2
+        self.epsilon = 0.1
         self.default_policy = default_policy
         self.default_exp_const = default_exp_const
         self.simulations = simulations  # M-value for number of simulations
         self.state = None
-        self.tree = []
+        self.tree = set()
         self.heuristic = {}
         self.visit_counts_s = {}
         self.visit_counts_sa = {}
@@ -28,7 +28,7 @@ class MonteCarloTreeSearch:
         """
         Resets the variables to their initial state.
         """
-        self.tree = []
+        self.tree = set()
 
     def mc_tree_search(self, root_state):
         """
@@ -133,7 +133,7 @@ class MonteCarloTreeSearch:
         """
         Creates a new node in the tree and sets all its values to 0.
         """
-        self.tree.append(state_t)
+        self.tree.add(state_t)
         self.visit_counts_s[state_t] = 0
         legal_actions = self.board.get_legal_actions(state_t)
         for action in legal_actions:

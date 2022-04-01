@@ -45,6 +45,8 @@ class Tournament():
         two games where each player gets to start once.
         """
         self.play_one_game(index_a, index_b)
+        self.play_one_game(index_a, index_b)
+        self.play_one_game(index_b, index_a)
         self.play_one_game(index_b, index_a)
 
     def play_one_game(self, index_0, index_1):
