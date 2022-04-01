@@ -96,6 +96,7 @@ class ReinforcementLearner():
                 # Perform chosen action
                 try:
                     state = self.sim_world.get_child_state(state, action)
+                    self.sim_world.show_visible_board(state)
                 except ValueError:
                     break
             # Train ANET on random minibatch of cases from RBUF
