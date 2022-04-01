@@ -1,8 +1,6 @@
 """Haakon8855"""
 
 from actor_network import ActorNetwork
-from game_hex import GameHex
-from reinforcement_learning import ReinforcementLearner
 
 
 class Tournament():
