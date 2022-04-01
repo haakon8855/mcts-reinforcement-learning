@@ -3,8 +3,6 @@
 import numpy as np
 
 from monte_carlo_ts import MonteCarloTreeSearch
-from game_nim import GameNim
-from game_hex import GameHex
 from actor_network import ActorNetwork
 
 
@@ -13,22 +11,29 @@ class ReinforcementLearner():
     A reinforcement learning algorithm implementing Monte Carlo Tree Search
     (MCTS) to train the default policy (in this case an ANN).
     """
-    weights_path = "model/actor_var_start/"
-    num_policies = 5
 
-    def __init__(self, sim_world, num_games: int = 100):
+    def __init__(self,
+                 sim_world,
+                 actor_network,
+                 mcts,
+                 num_policies: int = 5,
+                 weights_path: str = "model/actor_var_start/",
+                 num_games: int = 100,
+                 epsilon: float = 0.1,
+                 batch_size: int = 200):
+        self.num_policies = num_policies
         self.num_games = num_games
         self.rbuf_distributions = []
         self.rbuf_states = []
-        self.epsilon = 0.1
-        self.batch_size = 200
+        self.epsilon = epsilon
+        self.batch_size = batch_size
 
         self.sim_world = sim_world
+        self.actor_network = actor_network
+        self.mcts = mcts
 
-        self.weights_path = ReinforcementLearner.weights_path + self.sim_world.identifier
-        self.actor_network = None
+        self.weights_path = weights_path + self.sim_world.identifier
         self.save_count = 0
-        self.mcts = None
         self.initialize_actor_network()
         self.initialize_mcts()
 
@@ -102,8 +107,7 @@ class ReinforcementLearner():
             # Train ANET on random minibatch of cases from RBUF
             self.train_actor_network()
             print(f"Episode {i}")
-            if i % (self.num_games //
-                    (ReinforcementLearner.num_policies - 1)) == 0 and i != 0:
+            if i % (self.num_games // (self.num_policies - 1)) == 0 and i != 0:
                 self.actor_network.save_weights(self.save_count)
                 self.save_count += 1
         self.actor_network.save_weights(self.save_count)
@@ -192,28 +196,3 @@ class ReinforcementLearner():
             print(f"Final state = {final}, winner pid = {winner}")
             print(f"Board:\n{self.sim_world.get_board_readable(state)}\n")
             self.sim_world.show_visible_board(state)
-
-
-def main():
-    """
-    Main function for running this python script.
-    """
-    # simworld
-    use_nim = False
-    num_pieces = 14
-    max_take = 2
-    board_size = 4
-    if use_nim:
-        sim_world = GameNim(num_pieces, max_take)
-        reinforcement_learner = ReinforcementLearner(sim_world)
-        reinforcement_learner.train()
-        reinforcement_learner.test_nim()
-    else:
-        sim_world = GameHex(board_size)
-        reinforcement_learner = ReinforcementLearner(sim_world)
-        reinforcement_learner.train()
-        # reinforcement_learner.play_hex()
-
-
-if __name__ == "__main__":
-    main()

@@ -10,21 +10,22 @@ class Tournament():
     Performs a tournament with the saved policies.
     """
 
-    def __init__(self, sim_world):
-        self.policies = []
-        self.policies_win_count = [0] * ReinforcementLearner.num_policies
+    def __init__(self, sim_world, num_policies: int, weights_path: str):
         self.sim_world = sim_world
+        self.num_policies = num_policies
+        self.weights_path = weights_path
+        self.policies = []
+        self.policies_win_count = [0] * num_policies
         self.init_policies()
 
     def init_policies(self):
         """
         Loads all saved weights and saves the instances of ActorNetwork (policies).
         """
-        for i in range(ReinforcementLearner.num_policies):
+        for i in range(self.num_policies):
             input_size = self.sim_world.get_state_size()
             output_size = self.sim_world.get_move_size()
-            save_path = ReinforcementLearner.weights_path + self.sim_world.identifier + str(
-                i)
+            save_path = self.weights_path + self.sim_world.identifier + str(i)
             network = ActorNetwork(input_size, output_size, self.sim_world,
                                    save_path)
             network.load_weights()
@@ -70,17 +71,3 @@ class Tournament():
             if final:
                 self.policies_win_count[index_1] += 1
                 return
-
-
-def main():
-    """
-    Main function for running this python script.
-    """
-    board_size = 4
-    sim_world = GameHex(board_size)
-    topp = Tournament(sim_world)
-    topp.run()
-
-
-if __name__ == "__main__":
-    main()
