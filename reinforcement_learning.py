@@ -20,7 +20,7 @@ class ReinforcementLearner():
         self.num_games = num_games
         self.rbuf_distributions = []
         self.rbuf_states = []
-        self.epsilon = 0.07
+        self.epsilon = 0.1
         self.batch_size = 200
 
         self.sim_world = sim_world
@@ -68,6 +68,7 @@ class ReinforcementLearner():
         for i in range(self.num_games):
             # s_init <- starting_board_state
             state = self.sim_world.get_initial_state()
+            self.sim_world.show_visible_board(state)
             self.mcts.initialize_variables()
             while not self.sim_world.state_is_final(state):
                 # Initialize mcts to a single root which represents s_init
@@ -75,6 +76,7 @@ class ReinforcementLearner():
                 try:
                     action, distribution = self.mcts.mc_tree_search(state)
                 except ValueError:
+                    print("BROKE1")
                     break
                 # Append distribution to RBUF
                 self.rbuf_distributions.append(distribution)
@@ -84,7 +86,7 @@ class ReinforcementLearner():
                 if np.random.random() < self.epsilon:
                     # Choose one random legal action
                     # Copy distribution
-                    random_distribution = distribution.copy() + 0.00001
+                    random_distribution = distribution.copy()
                     # Set all probabilities larger than 0 to 1
                     random_distribution[random_distribution > 0] = 1
                     # Normalize vector to choose uniformly between legal actions
@@ -94,11 +96,9 @@ class ReinforcementLearner():
                         len(random_distribution), 1, p=random_distribution)[0]
                 action = self.sim_world.get_one_hot_action(chosen_action_index)
                 # Perform chosen action
-                try:
-                    state = self.sim_world.get_child_state(state, action)
-                    self.sim_world.show_visible_board(state)
-                except ValueError:
-                    break
+                state = self.sim_world.get_child_state(state, action)
+                self.sim_world.show_visible_board(state)
+
             # Train ANET on random minibatch of cases from RBUF
             self.train_actor_network()
             print(f"Episode {i}")
