@@ -212,7 +212,7 @@ def main():
         sim_world = GameHex(board_size)
         reinforcement_learner = ReinforcementLearner(sim_world)
         reinforcement_learner.train()
-        reinforcement_learner.play_hex()
+        # reinforcement_learner.play_hex()
 
 
 if __name__ == "__main__":
