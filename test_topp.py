@@ -42,19 +42,21 @@ class TestTopp:
         self.actor_network = ActorNetwork(input_size, output_size,
                                           self.sim_world, self.weights_path)
         self.mcts = MonteCarloTreeSearch(self.sim_world, self.actor_network)
-        reinforcement_learner = ReinforcementLearner(
+        self.reinforcement_learner = ReinforcementLearner(
             self.sim_world, self.actor_network, self.mcts, self.num_policies,
             self.weights_path, self.num_games, self.rl_epsilon)
-        reinforcement_learner.train()
-        reinforcement_learner.play_hex()
-        self.topp = Tournament(self.sim_world, self.num_policies,
-                               self.weights_path)
-        self.topp.run()
+        self.reinforcement_learner.train()
 
-    def run(self):
+    def run(self, play=False):
         """
         Runs the program according to the configuration.
         """
+        if play:
+            self.reinforcement_learner.play_hex()
+        else:
+            topp = Tournament(self.sim_world, self.num_policies,
+                              self.weights_path)
+            topp.run()
 
 
 def main():

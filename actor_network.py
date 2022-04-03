@@ -2,6 +2,7 @@
 
 import numpy as np
 from tensorflow import keras as ks
+from lite_model import LiteModel
 
 
 class ActorNetwork:
@@ -23,6 +24,7 @@ class ActorNetwork:
             ks.layers.Dense(100, activation='relu'),
             ks.layers.Dense(output_size, activation='softmax'),
         ])
+        self.lite_model = None
         self.compile_network()
 
     def compile_network(self):
@@ -30,9 +32,10 @@ class ActorNetwork:
         Compiles the network and adds an optimizer and a learning rate.
         """
         self.model.compile(
-            optimizer=ks.optimizers.Adam(self.learning_rate),
+            optimizer=ks.optimizers.Adagrad(self.learning_rate),
             loss=ks.losses.CategoricalCrossentropy(),
         )
+        self.lite_model = LiteModel.from_keras_model(self.model)
 
     def propose_action(self, state, get_distribution=False, epsilon=0):
         """
@@ -41,7 +44,7 @@ class ActorNetwork:
         legal_actions = self.board.get_legal_actions(state)
         legal_actions_filter = np.array(legal_actions).sum(axis=0)
         state_as_np = np.array(state).reshape(1, -1)
-        proposed_action_distribution = (self.model(state_as_np).numpy() +
+        proposed_action_distribution = (self.lite_model.predict(state_as_np) +
                                         0.00001) * legal_actions_filter
         if np.random.random() < epsilon:
             uniform_distribution = proposed_action_distribution.copy()[0]
@@ -64,6 +67,7 @@ class ActorNetwork:
         Trains the network on a minibatch of cases.
         """
         self.model.fit(train_x, train_y, epochs=epochs)
+        self.lite_model = LiteModel.from_keras_model(self.model)
 
     def save_weights(self, save_count):
         """
@@ -87,3 +91,4 @@ class ActorNetwork:
         except:  # pylint: disable=bare-except
             print("Could not read weights from file")
             return False
+        self.lite_model = LiteModel.from_keras_model(self.model)

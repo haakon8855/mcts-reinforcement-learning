@@ -23,14 +23,17 @@ class GameHex:
         self.player_to_begin = 0
         self.identifier = "hex"
 
-    def get_initial_state(self):
+    def get_initial_state(self, randomize_start=False):
         """
         Returns the initial state of the game.
         State is represented as a flattened array of shape (k, k, 2) with the
         pid represented as [x, x] appended to it.
         """
         board = np.zeros((self.board_size, self.board_size, 2))
-        pid = [[1.0, 0.0], [0.0, 1.0]][self.player_to_begin]
+        if randomize_start:
+            pid = [[1.0, 0.0], [0.0, 1.0]][self.player_to_begin]
+        else:
+            pid = [1.0, 0.0]
         self.player_to_begin = 1 - self.player_to_begin
         return tuple(board.flatten()) + tuple(pid)
 
