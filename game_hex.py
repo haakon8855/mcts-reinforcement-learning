@@ -132,15 +132,26 @@ class GameHex:
         """
         player = board[xpos, ypos]
         position = np.array([xpos, ypos])
-        neighbors = []
-        for offset in self.neighbor_offsets:
-            pos_and_offset = position + offset
-            if np.any(pos_and_offset < 0) or np.any(
-                    pos_and_offset >= self.board_size):
-                continue
-            pos_and_offset = tuple(pos_and_offset)
-            if board[pos_and_offset] == player and visited[pos_and_offset] == 0:
-                neighbors.append(pos_and_offset)
+        neighbors = position + self.neighbor_offsets
+        neighbors = neighbors[(neighbors >= 0).all(axis=1)]
+        neighbors = neighbors[(neighbors < self.board_size).all(axis=1)]
+        board_vals = board[[neighbors[:, 0]]][np.arange(0, len(neighbors)),
+                                              neighbors[:, 1]]
+        neighbors = neighbors[board_vals == player]
+        visited_vals = visited[[neighbors[:, 0]]][np.arange(0, len(neighbors)),
+                                                  neighbors[:, 1]]
+        neighbors = neighbors[visited_vals == 0]
+        neighbors = list(map(tuple, neighbors))
+
+        # neighbors = []
+        # for offset in self.neighbor_offsets:
+        #     pos_and_offset = position + offset
+        #     if np.any(pos_and_offset < 0) or np.any(
+        #             pos_and_offset >= self.board_size):
+        #         continue
+        #     pos_and_offset = tuple(pos_and_offset)
+        #     if board[pos_and_offset] == player and visited[pos_and_offset] == 0:
+        #         neighbors.append(pos_and_offset)
         return neighbors
 
     def p0_to_play(self, state):

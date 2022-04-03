@@ -6,6 +6,8 @@ from reinforcement_learning import ReinforcementLearner
 from actor_network import ActorNetwork
 from monte_carlo_ts import MonteCarloTreeSearch
 from topp import Tournament
+import cProfile
+import pstats
 
 
 class TestTopp:
@@ -45,6 +47,11 @@ class TestTopp:
         self.reinforcement_learner = ReinforcementLearner(
             self.sim_world, self.actor_network, self.mcts, self.num_policies,
             self.weights_path, self.num_games, self.rl_epsilon)
+
+    def train(self):
+        """
+        Trains the agent.
+        """
         self.reinforcement_learner.train()
 
     def run(self, play=False):
@@ -64,8 +71,17 @@ def main():
     Main function for running this python script.
     """
     test_topp = TestTopp("config/config1.ini")
+    test_topp.train()
     test_topp.run()
 
 
 if __name__ == "__main__":
     main()
+    # prof = cProfile.Profile()
+    # prof.run('main()')
+    # prof.dump_stats('output.prof')
+
+    # stream = open('output.txt', 'w')
+    # stats = pstats.Stats('output.prof', stream=stream)
+    # stats.sort_stats('cumtime')
+    # stats.print_stats()
