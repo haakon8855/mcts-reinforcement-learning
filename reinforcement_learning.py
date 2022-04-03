@@ -73,7 +73,7 @@ class ReinforcementLearner():
         for i in range(self.num_games):
             # s_init <- starting_board_state
             state = self.sim_world.get_initial_state()
-            self.sim_world.show_visible_board(state)
+            # self.sim_world.show_visible_board(state)
             self.mcts.initialize_variables()
             while not self.sim_world.state_is_final(state):
                 # Initialize mcts to a single root which represents s_init
@@ -102,7 +102,7 @@ class ReinforcementLearner():
                 action = self.sim_world.get_one_hot_action(chosen_action_index)
                 # Perform chosen action
                 state = self.sim_world.get_child_state(state, action)
-                self.sim_world.show_visible_board(state)
+                # self.sim_world.show_visible_board(state)
 
             # Train ANET on random minibatch of cases from RBUF
             self.train_actor_network()
