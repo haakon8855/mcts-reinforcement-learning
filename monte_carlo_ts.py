@@ -29,6 +29,9 @@ class MonteCarloTreeSearch:
         Resets the variables to their initial state.
         """
         self.tree = set()
+        self.heuristic = {}
+        self.visit_counts_s = {}
+        self.visit_counts_sa = {}
 
     def mc_tree_search(self, root_state):
         """
