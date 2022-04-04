@@ -247,6 +247,41 @@ class GameHex:
         new_point = (new_point[0] + pivot[0], new_point[1] + pivot[1])
         return new_point
 
+    @staticmethod
+    def get_correct_state_from_oht_state(oht_state, board_size):
+        """
+        Returns a state representation in the same representation as used by
+        this game manager. (i.e. converts from OHT's state representation
+        to this class's state representation)
+        """
+        player = oht_state[0]
+        board = np.array(oht_state[1:])
+
+        oh_board = []
+        for cell in board:
+            if cell == 0:
+                oh_board += [0.0, 0.0]
+            elif cell == 1:
+                oh_board += [0.0, 1.0]
+            else:
+                oh_board += [1.0, 0.0]
+        if player == 1:
+            oh_board += [0.0, 1.0]
+        else:
+            oh_board += [1.0, 0.0]
+        return tuple(oh_board)
+
+    @staticmethod
+    def get_row_and_col_from_oh_action(oh_action, board_size):
+        """
+        Returns the row and column corresponding to the location where the
+        piece should be placed according to the given one-hot-encoded action.
+        """
+        action = np.array(oh_action).reshape((board_size, board_size))
+        row = np.where(action == 1.0)[0][0]
+        col = np.where(action == 1.0)[1][0]
+        return row, col
+
     def __str__(self):
         return f"Board size is {self.board_size}x{self.board_size}."
 
@@ -298,6 +333,14 @@ def main():
     print(f"Won? \n{simworld.state_is_final(state, get_winner=True)}\n")
 
     simworld.show_visible_board(state)
+
+    simworld = GameHex(7)
+    state = simworld.get_initial_state()
+    legal_actions = simworld.get_legal_actions(state)
+    for i in range(0, 49):
+        action = legal_actions[i]
+        row, col = GameHex.get_row_and_col_from_oh_action(action, 7)
+        print(row, col)
 
 
 if __name__ == "__main__":

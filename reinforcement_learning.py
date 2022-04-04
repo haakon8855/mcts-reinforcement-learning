@@ -34,7 +34,7 @@ class ReinforcementLearner():
         self.mcts = mcts
 
         self.weights_path = weights_path + self.sim_world.identifier
-        self.save_count = 0
+        self.save_count = 11
         self.initialize_actor_network()
         self.initialize_mcts()
 
@@ -61,6 +61,11 @@ class ReinforcementLearner():
         mapping states to actions.
         """
         weights_loaded = self.actor_network.load_weights(self.save_count)
+        if weights_loaded:
+            return
+        else:
+            print("weights did not load")
+            return
         # Save initial weights to file
         self.actor_network.save_weights(self.save_count)
         self.save_count += 1

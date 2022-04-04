@@ -10,11 +10,15 @@ class ActorNetwork:
     Actor network for providing the default policy of the agent.
     """
 
-    def __init__(self, input_size: int, output_size: int, board,
-                 save_path: str):
+    def __init__(self,
+                 input_size: int,
+                 output_size: int,
+                 board,
+                 save_path: str,
+                 learning_rate: float = 0.003):
         self.board = board
         self.save_path = save_path
-        self.learning_rate = 0.003
+        self.learning_rate = learning_rate
         self.save_count = 0
         self.model = ks.models.Sequential([
             ks.layers.Input(shape=input_size),

@@ -6,8 +6,8 @@ from reinforcement_learning import ReinforcementLearner
 from actor_network import ActorNetwork
 from monte_carlo_ts import MonteCarloTreeSearch
 from topp import Tournament
-import cProfile
-import pstats
+# import cProfile
+# import pstats
 
 
 class TestTopp:
@@ -42,7 +42,8 @@ class TestTopp:
         input_size = self.sim_world.get_state_size()
         output_size = self.sim_world.get_move_size()
         self.actor_network = ActorNetwork(input_size, output_size,
-                                          self.sim_world, self.weights_path)
+                                          self.sim_world, self.weights_path,
+                                          self.lrate)
         self.mcts = MonteCarloTreeSearch(self.sim_world, self.actor_network)
         self.reinforcement_learner = ReinforcementLearner(
             self.sim_world, self.actor_network, self.mcts, self.num_policies,
@@ -72,7 +73,7 @@ def main():
     """
     test_topp = TestTopp("config/config1.ini")
     test_topp.train()
-    test_topp.run()
+    test_topp.run(play=False)
 
 
 if __name__ == "__main__":
