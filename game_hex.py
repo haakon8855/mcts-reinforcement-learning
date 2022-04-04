@@ -248,7 +248,7 @@ class GameHex:
         return new_point
 
     @staticmethod
-    def get_correct_state_from_oht_state(oht_state, board_size):
+    def get_correct_state_from_oht_state(oht_state):
         """
         Returns a state representation in the same representation as used by
         this game manager. (i.e. converts from OHT's state representation
@@ -277,9 +277,10 @@ class GameHex:
         Returns the row and column corresponding to the location where the
         piece should be placed according to the given one-hot-encoded action.
         """
-        action = np.array(oh_action).reshape((board_size, board_size))
-        row = np.where(action == 1.0)[0][0]
-        col = np.where(action == 1.0)[1][0]
+        action = np.array(oh_action)
+        num = np.where(action == 1.0)[0][0]
+        row = num // board_size
+        col = num % board_size
         return row, col
 
     def __str__(self):

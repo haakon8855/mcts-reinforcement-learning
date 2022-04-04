@@ -91,8 +91,8 @@ class ActorNetwork:
                 self.model.load_weights(filepath=self.save_path +
                                         str(save_count))
             print("Read weights successfully from file")
+            self.lite_model = LiteModel.from_keras_model(self.model)
             return True
         except:  # pylint: disable=bare-except
             print("Could not read weights from file")
             return False
-        self.lite_model = LiteModel.from_keras_model(self.model)

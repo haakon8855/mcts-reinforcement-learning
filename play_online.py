@@ -11,16 +11,21 @@ save_path = "model/actor_7x7_1_100/" + sim_world.identifier
 input_size = sim_world.get_state_size()
 output_size = sim_world.get_move_size()
 actor = ActorNetwork(input_size, output_size, sim_world, save_path)
-weights_loaded = actor.load_weights(save_count=14)
+weights_loaded = actor.load_weights(save_count=15)
 if not weights_loaded:
     raise FileNotFoundError("Error: Weights not loaded!!")
 
 
 class MyClient(ActorClient):
+    """
+    test
+    """
 
     def handle_get_action(self, state):
-        formatted_state = GameHex.get_correct_state_from_oht_state(
-            state, board_size)
+        """
+        sdfjlsdk
+        """
+        formatted_state = GameHex.get_correct_state_from_oht_state(state)
         oh_action = actor.propose_action(formatted_state)
         row, col = GameHex.get_row_and_col_from_oh_action(
             oh_action, board_size)

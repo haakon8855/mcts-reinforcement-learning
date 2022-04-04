@@ -25,7 +25,6 @@ class ReinforcementLearner():
         self.num_games = num_games
         self.rbuf_distributions = []
         self.rbuf_states = []
-        self.rbuf_max_length = 300
         self.epsilon = epsilon
         self.batch_size = batch_size
 
@@ -34,7 +33,7 @@ class ReinforcementLearner():
         self.mcts = mcts
 
         self.weights_path = weights_path + self.sim_world.identifier
-        self.save_count = 11
+        self.save_count = 0
         self.initialize_actor_network()
         self.initialize_mcts()
 
@@ -62,9 +61,6 @@ class ReinforcementLearner():
         """
         weights_loaded = self.actor_network.load_weights(self.save_count)
         if weights_loaded:
-            return
-        else:
-            print("weights did not load")
             return
         # Save initial weights to file
         self.actor_network.save_weights(self.save_count)
@@ -110,11 +106,6 @@ class ReinforcementLearner():
 
             # Train ANET on random minibatch of cases from RBUF
             self.train_actor_network()
-            if len(self.rbuf_distributions) > self.rbuf_max_length:
-                self.rbuf_distributions = self.rbuf_distributions[
-                    -self.rbuf_max_length:]
-            if len(self.rbuf_states) > self.rbuf_max_length:
-                self.rbuf_states = self.rbuf_states[-self.rbuf_max_length:]
             print(f"Episode {i}")
             if i % (self.num_games // (self.num_policies - 1)) == 0 and i != 0:
                 self.actor_network.save_weights(self.save_count)
@@ -126,14 +117,17 @@ class ReinforcementLearner():
         """
         Trains the actor network on a minibatch of cases from RBUF.
         """
-        random_indices = np.random.default_rng().choice(
-            len(self.rbuf_distributions),
-            min(self.batch_size, len(self.rbuf_distributions)),
-            replace=False)
-        minibatch_states = np.array(self.rbuf_states)[random_indices]
-        minibatch_distr = np.array(self.rbuf_distributions)[random_indices]
-        self.actor_network.fit(train_x=np.array(minibatch_states),
-                               train_y=np.array(minibatch_distr),
+        # random_indices = np.random.default_rng().choice(
+        #     len(self.rbuf_distributions),
+        #     min(self.batch_size, len(self.rbuf_distributions)),
+        #     replace=False)
+        # minibatch_states = np.array(self.rbuf_states)[random_indices]
+        # minibatch_distr = np.array(self.rbuf_distributions)[random_indices]
+        # self.actor_network.fit(train_x=np.array(minibatch_states),
+        #                        train_y=np.array(minibatch_distr),
+        #                        epochs=100)
+        self.actor_network.fit(train_x=np.array(self.rbuf_states),
+                               train_y=np.array(self.rbuf_distributions),
                                epochs=100)
 
     def test_nim(self):
@@ -173,7 +167,7 @@ class ReinforcementLearner():
         """
         Play hex agains the machine.
         """
-        weights_loaded = self.actor_network.load_weights(2)
+        weights_loaded = self.actor_network.load_weights(10)
         if not weights_loaded:
             print("Could not load weights, returning")
             return
