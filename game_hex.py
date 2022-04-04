@@ -231,7 +231,7 @@ class GameHex:
                 color = possible_colors[int(board[key])]
                 colors.append(color)
 
-        nx.draw(graph, pos=coords, node_color=colors)
+        nx.draw(graph, pos=coords, node_color=colors, with_labels=True)
         plt.savefig("figs/graph.png")
 
     @staticmethod

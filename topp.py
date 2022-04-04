@@ -1,5 +1,8 @@
 """Haakon8855"""
 
+import numpy as np
+from matplotlib import pyplot as plt
+
 from actor_network import ActorNetwork
 
 
@@ -37,6 +40,15 @@ class Tournament():
             for j in range(i + 1, len(self.policies)):
                 self.play_one_match(i, j)
         print(f"Wins for each agent was: {self.policies_win_count}")
+        self.plot_policies_win_count()
+
+    def plot_policies_win_count(self):
+        """
+        Plots the win counts for each policy/agent.
+        """
+        plt.bar(np.arange(0, len(self.policies_win_count)),
+                self.policies_win_count)
+        plt.show()
 
     def play_one_match(self, index_a, index_b):
         """

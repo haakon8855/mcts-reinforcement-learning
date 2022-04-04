@@ -167,7 +167,7 @@ class ReinforcementLearner():
         """
         Play hex agains the machine.
         """
-        weights_loaded = self.actor_network.load_weights(10)
+        weights_loaded = self.actor_network.load_weights(15)
         if not weights_loaded:
             print("Could not load weights, returning")
             return

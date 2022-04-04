@@ -71,7 +71,7 @@ def main():
     """
     Main function for running this python script.
     """
-    test_topp = TestTopp("config/config1.ini")
+    test_topp = TestTopp("config/config2.ini")
     test_topp.train()
     test_topp.run(play=False)
 
