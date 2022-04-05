@@ -9,25 +9,32 @@ class ActorNetwork:
     """
     Actor network for providing the default policy of the agent.
     """
+    legal_activation_funcs = ['relu', 'sigmoid', 'tanh', 'linear']
 
     def __init__(self,
                  input_size: int,
                  output_size: int,
                  board,
                  save_path: str,
+                 layer_sizes: list,
+                 layer_acts: list,
                  learning_rate: float = 0.003):
         self.board = board
         self.save_path = save_path
+        self.layer_sizes = layer_sizes
+        self.layer_acts = layer_acts
         self.learning_rate = learning_rate
         self.save_count = 0
-        self.model = ks.models.Sequential([
-            ks.layers.Input(shape=input_size),
-            ks.layers.Flatten(),
-            ks.layers.Dense(200, activation='relu'),
-            ks.layers.Dense(200, activation='relu'),
-            ks.layers.Dense(100, activation='relu'),
-            ks.layers.Dense(output_size, activation='softmax'),
-        ])
+
+        self.model = ks.models.Sequential()
+        self.model.add(ks.layers.Input(shape=input_size))
+        self.model.add(ks.layers.Flatten())
+        for size, act in zip(layer_sizes, layer_acts):
+            if act not in ActorNetwork.legal_activation_funcs:
+                act = ActorNetwork.legal_activation_funcs[0]
+            self.model.add(ks.layers.Dense(size, activation=act))
+        self.model.add(ks.layers.Dense(output_size, activation='softmax'))
+
         self.lite_model = None
         self.compile_network()
 

@@ -1,2 +1,2 @@
-model_checkpoint_path: "hex4"
-all_model_checkpoint_paths: "hex4"
+model_checkpoint_path: "hex10"
+all_model_checkpoint_paths: "hex10"

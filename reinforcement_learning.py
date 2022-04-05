@@ -18,6 +18,7 @@ class ReinforcementLearner():
                  mcts,
                  num_policies: int = 5,
                  weights_path: str = "model/actor_var_start/",
+                 weights_index: int = 10,
                  num_games: int = 100,
                  epsilon: float = 0.1,
                  batch_size: int = 200):
@@ -33,6 +34,11 @@ class ReinforcementLearner():
         self.mcts = mcts
 
         self.weights_path = weights_path + self.sim_world.identifier
+        self.weights_index = weights_index
+        self.save_intervals = np.linspace(0,
+                                          num_games,
+                                          num_policies,
+                                          dtype=int)[1:-1]
         self.save_count = 0
         self.initialize_actor_network()
         self.initialize_mcts()
@@ -73,7 +79,7 @@ class ReinforcementLearner():
         for i in range(self.num_games):
             # s_init <- starting_board_state
             state = self.sim_world.get_initial_state()
-            # self.sim_world.show_visible_board(state)
+            self.sim_world.show_visible_board(state)
             self.mcts.initialize_variables()
             while not self.sim_world.state_is_final(state):
                 # Initialize mcts to a single root which represents s_init
@@ -102,12 +108,12 @@ class ReinforcementLearner():
                 action = self.sim_world.get_one_hot_action(chosen_action_index)
                 # Perform chosen action
                 state = self.sim_world.get_child_state(state, action)
-                # self.sim_world.show_visible_board(state)
+                self.sim_world.show_visible_board(state)
 
             # Train ANET on random minibatch of cases from RBUF
             self.train_actor_network()
             print(f"Episode {i}")
-            if i % (self.num_games // (self.num_policies - 1)) == 0 and i != 0:
+            if i in self.save_intervals:
                 self.actor_network.save_weights(self.save_count)
                 self.save_count += 1
         self.actor_network.save_weights(self.save_count)
@@ -117,15 +123,6 @@ class ReinforcementLearner():
         """
         Trains the actor network on a minibatch of cases from RBUF.
         """
-        # random_indices = np.random.default_rng().choice(
-        #     len(self.rbuf_distributions),
-        #     min(self.batch_size, len(self.rbuf_distributions)),
-        #     replace=False)
-        # minibatch_states = np.array(self.rbuf_states)[random_indices]
-        # minibatch_distr = np.array(self.rbuf_distributions)[random_indices]
-        # self.actor_network.fit(train_x=np.array(minibatch_states),
-        #                        train_y=np.array(minibatch_distr),
-        #                        epochs=100)
         self.actor_network.fit(train_x=np.array(self.rbuf_states),
                                train_y=np.array(self.rbuf_distributions),
                                epochs=100)
@@ -167,7 +164,7 @@ class ReinforcementLearner():
         """
         Play hex agains the machine.
         """
-        weights_loaded = self.actor_network.load_weights(15)
+        weights_loaded = self.actor_network.load_weights(self.weights_index)
         if not weights_loaded:
             print("Could not load weights, returning")
             return

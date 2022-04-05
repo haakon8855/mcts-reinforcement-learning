@@ -3,10 +3,11 @@
 from actor_network import ActorNetwork
 from game_hex import GameHex
 from client.ActorClient import ActorClient
+from time import time
 
 board_size = 7
 sim_world = GameHex(board_size)
-save_path = "model/actor_7x7_1_100/" + sim_world.identifier
+save_path = "model/actor_7x7_200_500/" + sim_world.identifier
 
 input_size = sim_world.get_state_size()
 output_size = sim_world.get_move_size()
@@ -25,10 +26,12 @@ class MyClient(ActorClient):
         """
         sdfjlsdk
         """
+        starttime = time()
         formatted_state = GameHex.get_correct_state_from_oht_state(state)
         oh_action = actor.propose_action(formatted_state)
         row, col = GameHex.get_row_and_col_from_oh_action(
             oh_action, board_size)
+        print(f"time: {time() - starttime}")
         return int(row), int(col)
 
 

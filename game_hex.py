@@ -233,6 +233,7 @@ class GameHex:
 
         nx.draw(graph, pos=coords, node_color=colors, with_labels=True)
         plt.savefig("figs/graph.png")
+        plt.clf()
 
     @staticmethod
     def rotate_point(point, pivot, angle):
