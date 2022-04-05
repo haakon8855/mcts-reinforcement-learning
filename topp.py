@@ -11,10 +11,13 @@ class Tournament():
     Performs a tournament with the saved policies.
     """
 
-    def __init__(self, sim_world, num_policies: int, weights_path: str):
+    def __init__(self, sim_world, num_policies: int, weights_path: str,
+                 network_layer_sizes: list, network_layer_acts: list):
         self.sim_world = sim_world
         self.num_policies = num_policies
         self.weights_path = weights_path
+        self.network_layer_sizes = network_layer_sizes
+        self.network_layer_acts = network_layer_acts
         self.policies = []
         self.policies_win_count = [0] * num_policies
         self.init_policies()
@@ -26,9 +29,10 @@ class Tournament():
         for i in range(self.num_policies):
             input_size = self.sim_world.get_state_size()
             output_size = self.sim_world.get_move_size()
-            save_path = self.weights_path + self.sim_world.identifier + str(i)
+            save_path = self.weights_path + str(i)
             network = ActorNetwork(input_size, output_size, self.sim_world,
-                                   save_path)
+                                   save_path, self.network_layer_sizes,
+                                   self.network_layer_acts)
             network.load_weights()
             self.policies.append(network)
 

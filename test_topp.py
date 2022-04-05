@@ -53,6 +53,7 @@ class TestTopp:
 
         # Initialize classes
         self.sim_world = GameHex(self.board_size)
+        self.weights_path = self.weights_path + self.sim_world.identifier
         input_size = self.sim_world.get_state_size()
         output_size = self.sim_world.get_move_size()
         self.actor_network = ActorNetwork(input_size, output_size,
@@ -79,7 +80,8 @@ class TestTopp:
             self.reinforcement_learner.play_hex()
         else:
             topp = Tournament(self.sim_world, self.num_policies,
-                              self.weights_path)
+                              self.weights_path, self.layer_sizes,
+                              self.layer_acts)
             topp.run()
 
 
@@ -87,7 +89,7 @@ def main():
     """
     Main function for running this python script.
     """
-    test_topp = TestTopp("config/config2.ini")
+    test_topp = TestTopp("config/config1.ini")
     test_topp.train()
     test_topp.run(play=False)
 

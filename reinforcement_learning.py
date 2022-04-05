@@ -33,25 +33,13 @@ class ReinforcementLearner():
         self.actor_network = actor_network
         self.mcts = mcts
 
-        self.weights_path = weights_path + self.sim_world.identifier
         self.weights_index = weights_index
         self.save_intervals = np.linspace(0,
                                           num_games,
                                           num_policies,
                                           dtype=int)[1:-1]
         self.save_count = 0
-        self.initialize_actor_network()
         self.initialize_mcts()
-
-    def initialize_actor_network(self):
-        """
-        Initializes the actor network with the correct input
-        and output parameters.
-        """
-        input_size = self.sim_world.get_state_size()
-        output_size = self.sim_world.get_move_size()
-        self.actor_network = ActorNetwork(input_size, output_size,
-                                          self.sim_world, self.weights_path)
 
     def initialize_mcts(self):
         """

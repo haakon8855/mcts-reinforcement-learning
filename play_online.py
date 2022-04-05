@@ -11,7 +11,10 @@ save_path = "model/actor_7x7_200_500/" + sim_world.identifier
 
 input_size = sim_world.get_state_size()
 output_size = sim_world.get_move_size()
-actor = ActorNetwork(input_size, output_size, sim_world, save_path)
+layer_sizes = [200, 200, 100]
+layer_acts = ['relu', 'relu', 'relu']
+actor = ActorNetwork(input_size, output_size, sim_world, save_path,
+                     layer_sizes, layer_acts)
 weights_loaded = actor.load_weights(save_count=15)
 if not weights_loaded:
     raise FileNotFoundError("Error: Weights not loaded!!")
@@ -19,19 +22,19 @@ if not weights_loaded:
 
 class MyClient(ActorClient):
     """
-    test
+    ActorClient with custom action handler.
     """
 
     def handle_get_action(self, state):
         """
-        sdfjlsdk
+        Handles returning an action given the game state.
         """
         starttime = time()
         formatted_state = GameHex.get_correct_state_from_oht_state(state)
         oh_action = actor.propose_action(formatted_state)
         row, col = GameHex.get_row_and_col_from_oh_action(
             oh_action, board_size)
-        print(f"time: {time() - starttime}")
+        print(f"Time taken to move: {time() - starttime}")
         return int(row), int(col)
 
 
