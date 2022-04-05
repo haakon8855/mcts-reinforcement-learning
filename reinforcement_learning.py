@@ -2,9 +2,6 @@
 
 import numpy as np
 
-from monte_carlo_ts import MonteCarloTreeSearch
-from actor_network import ActorNetwork
-
 
 class ReinforcementLearner():
     """
@@ -17,17 +14,14 @@ class ReinforcementLearner():
                  actor_network,
                  mcts,
                  num_policies: int = 5,
-                 weights_path: str = "model/actor_var_start/",
                  weights_index: int = 10,
                  num_games: int = 100,
-                 epsilon: float = 0.1,
-                 batch_size: int = 200):
+                 epsilon: float = 0.1):
         self.num_policies = num_policies
         self.num_games = num_games
         self.rbuf_distributions = []
         self.rbuf_states = []
         self.epsilon = epsilon
-        self.batch_size = batch_size
 
         self.sim_world = sim_world
         self.actor_network = actor_network
@@ -39,14 +33,6 @@ class ReinforcementLearner():
                                           num_policies,
                                           dtype=int)[1:-1]
         self.save_count = 0
-        self.initialize_mcts()
-
-    def initialize_mcts(self):
-        """
-        Initializes monte carlo tree search with the correct parameters.
-        """
-        self.mcts = MonteCarloTreeSearch(board=self.sim_world,
-                                         default_policy=self.actor_network)
 
     def train(self):
         """
@@ -98,7 +84,7 @@ class ReinforcementLearner():
                 state = self.sim_world.get_child_state(state, action)
                 self.sim_world.show_visible_board(state)
 
-            # Train ANET on random minibatch of cases from RBUF
+            # Train ANET on cases from RBUF
             self.train_actor_network()
             print(f"Episode {i}")
             if i in self.save_intervals:
@@ -109,7 +95,7 @@ class ReinforcementLearner():
 
     def train_actor_network(self):
         """
-        Trains the actor network on a minibatch of cases from RBUF.
+        Trains the actor network on cases from RBUF.
         """
         self.actor_network.fit(train_x=np.array(self.rbuf_states),
                                train_y=np.array(self.rbuf_distributions),

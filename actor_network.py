@@ -18,11 +18,13 @@ class ActorNetwork:
                  save_path: str,
                  layer_sizes: list,
                  layer_acts: list,
+                 optimizer_str: str,
                  learning_rate: float = 0.003):
         self.board = board
         self.save_path = save_path
         self.layer_sizes = layer_sizes
         self.layer_acts = layer_acts
+        self.optimizer_str = optimizer_str
         self.learning_rate = learning_rate
         self.save_count = 0
 
@@ -42,8 +44,16 @@ class ActorNetwork:
         """
         Compiles the network and adds an optimizer and a learning rate.
         """
+        if self.optimizer_str == "sgd":
+            optimizer = ks.optimizers.SGD(self.learning_rate)
+        elif self.optimizer_str == "rmsprop":
+            optimizer = ks.optimizers.RMSprop(self.learning_rate)
+        elif self.optimizer_str == "adagrad":
+            optimizer = ks.optimizers.Adagrad(self.learning_rate)
+        else:
+            optimizer = ks.optimizers.Adam(self.learning_rate)
         self.model.compile(
-            optimizer=ks.optimizers.Adagrad(self.learning_rate),
+            optimizer=optimizer,
             loss=ks.losses.CategoricalCrossentropy(),
         )
         self.lite_model = LiteModel.from_keras_model(self.model)

@@ -12,12 +12,14 @@ class Tournament():
     """
 
     def __init__(self, sim_world, num_policies: int, weights_path: str,
-                 network_layer_sizes: list, network_layer_acts: list):
+                 network_layer_sizes: list, network_layer_acts: list,
+                 optimizer_str: str):
         self.sim_world = sim_world
         self.num_policies = num_policies
         self.weights_path = weights_path
         self.network_layer_sizes = network_layer_sizes
         self.network_layer_acts = network_layer_acts
+        self.optimizer_str = optimizer_str
         self.policies = []
         self.policies_win_count = [0] * num_policies
         self.init_policies()
@@ -32,7 +34,7 @@ class Tournament():
             save_path = self.weights_path + str(i)
             network = ActorNetwork(input_size, output_size, self.sim_world,
                                    save_path, self.network_layer_sizes,
-                                   self.network_layer_acts)
+                                   self.network_layer_acts, self.optimizer_str)
             network.load_weights()
             self.policies.append(network)
 

@@ -13,8 +13,13 @@ input_size = sim_world.get_state_size()
 output_size = sim_world.get_move_size()
 layer_sizes = [200, 200, 100]
 layer_acts = ['relu', 'relu', 'relu']
-actor = ActorNetwork(input_size, output_size, sim_world, save_path,
-                     layer_sizes, layer_acts)
+actor = ActorNetwork(input_size,
+                     output_size,
+                     sim_world,
+                     save_path,
+                     layer_sizes,
+                     layer_acts,
+                     optimizer_str="adagrad")
 weights_loaded = actor.load_weights(save_count=15)
 if not weights_loaded:
     raise FileNotFoundError("Error: Weights not loaded!!")
