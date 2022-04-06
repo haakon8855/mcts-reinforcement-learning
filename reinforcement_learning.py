@@ -18,18 +18,19 @@ class ReinforcementLearner():
                  num_games: int = 100,
                  epsilon: float = 0.1,
                  draw_board: bool = False):
-        self.num_policies = num_policies
-        self.num_games = num_games
+        self.num_policies = num_policies  # Number of policies to save
+        self.num_games = num_games  # Number of actual episodes to run
         self.rbuf_distributions = []
         self.rbuf_states = []
-        self.epsilon = epsilon
-        self.draw_board = draw_board
+        self.epsilon = epsilon  # Exploration value to choose actual move randomly
+        self.draw_board = draw_board  # Whether to draw the board during training or not
 
         self.sim_world = sim_world
         self.actor_network = actor_network
         self.mcts = mcts
 
-        self.weights_index = weights_index
+        self.weights_index = weights_index  # Which weights to load when playing against computer
+        # The intervals at which to save the current weights of the ANET
         self.save_intervals = np.linspace(0,
                                           num_games,
                                           num_policies,
@@ -50,10 +51,9 @@ class ReinforcementLearner():
         # Clear replay buffer RBUF
         self.rbuf_distributions = []
         self.rbuf_states = []
-        # Randomly init ANET - Done
-        # for game in num_games
+        # Randomly initialize ANET
         for i in range(self.num_games):
-            # s_init <- starting_board_state
+            # get initial state
             state = self.sim_world.get_initial_state()
             if self.draw_board:
                 self.sim_world.show_visible_board(state, title=f"Episode {i}")
@@ -66,7 +66,7 @@ class ReinforcementLearner():
                 except ValueError:
                     print("BROKE1")
                     break
-                # Append distribution to RBUF
+                # Append distribution and state to RBUF
                 self.rbuf_distributions.append(distribution)
                 self.rbuf_states.append(state)
                 # Choose actual move from D
@@ -92,9 +92,11 @@ class ReinforcementLearner():
             # Train ANET on cases from RBUF
             self.train_actor_network()
             print(f"Episode {i}")
+            # Save network weights if we should save after this episode
             if i in self.save_intervals:
                 self.actor_network.save_weights(self.save_count)
                 self.save_count += 1
+        # Save weights after training
         self.actor_network.save_weights(self.save_count)
         self.save_count += 1
 
@@ -105,39 +107,6 @@ class ReinforcementLearner():
         self.actor_network.fit(train_x=np.array(self.rbuf_states),
                                train_y=np.array(self.rbuf_distributions),
                                epochs=100)
-
-    def test_nim(self):
-        """
-        Tests the trained nim policy.
-        """
-        for i in range(1, self.sim_world.num_pieces + 1):
-            state = self.sim_world.get_one_hot_state((i, 0))
-            # Print state
-            num_state = self.sim_world.get_num_discs_from_one_hot(state)
-            print(f"State: {num_state}")
-            # Find move
-            action, distr = self.actor_network.propose_action(
-                state, get_distribution=True)
-            # Print move
-            print(f"Proposed action: {action}")
-            print(f"Proposed action distribution: {distr}")
-
-    def test_hex(self):
-        """
-        Tests the trained hex policy.
-        """
-        state = self.sim_world.get_initial_state()
-        print(f"Board:\n{self.sim_world.get_board_readable(state)}\n")
-        while not self.sim_world.state_is_final(state):
-            action, distr = self.actor_network.propose_action(
-                state, get_distribution=True)
-            print(f"Proposed action: {action}")
-            print(f"Proposed action distribution: {distr}")
-            state = self.sim_world.get_child_state(state, action)
-            final, winner = self.sim_world.state_is_final(state,
-                                                          get_winner=True)
-            print(f"Final state = {final}, winner pid = {winner}")
-            print(f"Board:\n{self.sim_world.get_board_readable(state)}\n")
 
     def play_hex(self):
         """

@@ -6,8 +6,6 @@ from reinforcement_learning import ReinforcementLearner
 from actor_network import ActorNetwork
 from monte_carlo_ts import MonteCarloTreeSearch
 from topp import Tournament
-# import cProfile
-# import pstats
 
 
 class TestTopp:
@@ -112,11 +110,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # prof = cProfile.Profile()
-    # prof.run('main()')
-    # prof.dump_stats('output.prof')
-
-    # stream = open('output.txt', 'w')
-    # stats = pstats.Stats('output.prof', stream=stream)
-    # stats.sort_stats('cumtime')
-    # stats.print_stats()

@@ -39,8 +39,9 @@ class MonteCarloTreeSearch:
         a new node in the tree being created.
         """
         for _ in range(self.simulations):
-            self.simulate(root_state)
+            self.simulate(root_state)  # Run simulation from root state
         self.state = root_state
+        # Return an action and the distribution from the root state
         return self.select_action(root_state,
                                   0), self.get_visited_distribution(root_state)
 
@@ -51,10 +52,13 @@ class MonteCarloTreeSearch:
         game is over.
         """
         self.state = root_state
+        # Go down the tree
         visited_states, performed_actions = self.simulate_tree()
+        # Run rollout after leaf-node is reached
         outcome, first_action = self.simulate_default()
         if first_action is not None:
             performed_actions.append(first_action)
+        # Run backup on the tree after rollout has reached final state
         self.backup(visited_states, performed_actions, outcome)
 
     def simulate_tree(self):
@@ -62,14 +66,16 @@ class MonteCarloTreeSearch:
         Simulates the walk of moves down the tree itself.
         """
         exploration = self.default_exp_const
-        visited_states = []
+        visited_states = []  # Keep track of visited tree-nodes
         performed_actions = []
         while not self.board.state_is_final(self.state):
             state_t = self.state
             visited_states.append(state_t)
+            # If state is leaf-node add it to the tree
             if state_t not in self.tree:
                 self.new_node(state_t)
                 return visited_states, performed_actions
+            # Else, keep going down the tree by doing moves
             action = self.select_action(state_t, exploration)
             performed_actions.append(action)
             self.state = self.board.get_child_state(self.state, action)
@@ -79,7 +85,10 @@ class MonteCarloTreeSearch:
         """
         Simulates the rollout of default moves after a leaf node in the tree
         is reached. The default policy is used to determine the moves.
+        Returns the first move performed by the ANET, in order for backup to
+        work properly.
         """
+        # Use ANET to play game until a final state is reached.
         first_action = None
         if not self.board.state_is_final(self.state):
             first_action = self.default_policy.propose_action(
@@ -99,6 +108,7 @@ class MonteCarloTreeSearch:
         """
         legal_actions = self.board.get_legal_actions(state)
         action_values = []
+        # Black to play, maximize reward
         if self.board.p0_to_play(state):
             for action in legal_actions:
                 action_value = self.heuristic[
@@ -108,6 +118,7 @@ class MonteCarloTreeSearch:
                 action_values.append(action_value)
             chosen_action_index = np.argmax(np.array(action_values))
             chosen_action = legal_actions[chosen_action_index]
+        # Red to play, minimize reward
         else:
             for action in legal_actions:
                 action_value = self.heuristic[

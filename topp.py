@@ -28,8 +28,8 @@ class Tournament():
         self.network_layer_sizes = network_layer_sizes
         self.network_layer_acts = network_layer_acts
         self.optimizer_str = optimizer_str
-        self.draw_board = draw_board
-        self.animation_sleep_duration = 0.5
+        self.draw_board = draw_board  # Whether to draw the board or not during TOPP
+        self.animation_sleep_duration = 0.5  # Time to sleep between making a move
 
         self.policies = []
         self.policies_win_count = [0] * num_policies
@@ -51,7 +51,7 @@ class Tournament():
 
     def run(self):
         """
-        Runs a tournament.
+        Runs a tournament between the loaded policies.
         """
         for i in range(len(self.policies) - 1):
             for j in range(i + 1, len(self.policies)):
@@ -69,8 +69,8 @@ class Tournament():
 
     def play_one_series(self, index_a, index_b):
         """
-        Plays one match between player at index_a and player at index_b,
-        two games where each player gets to start once.
+        Plays one series between player at index_a and player at index_b,
+        G games where each policy alternates playing as black.
         """
         players = [index_a, index_b]
         for _ in range(self.num_games_in_series):
@@ -87,8 +87,10 @@ class Tournament():
 
         state = self.sim_world.get_initial_state()
         while True:
+            # Black makes a move:
             action, distribution = player_0.propose_action(
                 state, get_distribution=True)
+            # Choose action randomly based on the output from the network
             distribution /= distribution.sum()
             distribution = distribution.copy()[0]
             action_num = np.random.choice(len(distribution), 1,
@@ -102,8 +104,11 @@ class Tournament():
             if final:
                 self.policies_win_count[index_0] += 1
                 return
+
+            # Red makes a move:
             action, distribution = player_1.propose_action(
                 state, get_distribution=True)
+            # Choose action randomly based on the output from the network
             distribution /= distribution.sum()
             distribution = distribution.copy()[0]
             action_num = np.random.choice(len(distribution), 1,
