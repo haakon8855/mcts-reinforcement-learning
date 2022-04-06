@@ -26,6 +26,10 @@ class TestTopp:
         if self.weights_index < 0:
             self.weights_index = self.num_policies - 1
         self.num_games = int(rl_conf['num_games'])
+        if self.num_policies > self.num_games + 1:
+            self.num_policies = self.num_games + 1
+        elif self.num_policies < 2:
+            self.num_policies = 2
         self.epochs_per_episode = int(rl_conf['epochs_per_episode'])
         self.rl_epsilon = float(rl_conf['epsilon'])
         # Fetch config for actor
@@ -86,7 +90,10 @@ def main():
     """
     Main function for running this python script.
     """
-    test_topp = TestTopp("config/config3.ini")
+    # test_topp = TestTopp("config/config1.ini")  # 4x4 200ep 500sim
+    # test_topp = TestTopp("config/config2.ini")  # 7x7 272ep 500sim
+    # test_topp = TestTopp("config/config3.ini")  # 4x4 20ep 500sim
+    test_topp = TestTopp("config/config4.ini")  # demo config, free to edit
     test_topp.train()
     test_topp.run(play=False)
 
