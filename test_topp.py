@@ -32,20 +32,27 @@ class TestTopp:
             self.num_policies = 2
         self.epochs_per_episode = int(rl_conf['epochs_per_episode'])
         self.rl_epsilon = float(rl_conf['epsilon'])
+        self.rl_draw_board = rl_conf['draw_board'] == "true"
+
         # Fetch config for actor
         actor_conf = self.config['ACTOR']
         self.lrate = float(actor_conf['lrate'])
         self.optimizer = actor_conf['optimizer']
+
         # Fetch config for mcts
         mcts_conf = self.config['MCTS']
         self.sim_games = int(mcts_conf['sim_games'])
         self.mcts_epsilon = float(mcts_conf['epsilon'])
+
         # Fetch config for the simworld
         simworld_conf = self.config['SIMWORLD']
         self.board_size = int(simworld_conf['board_size'])
+
         # Fetch config for the TOPP
         topp_conf = self.config['TOPP']
         self.num_games_in_series = int(topp_conf['num_games_in_series'])
+        self.topp_draw_board = topp_conf['draw_board'] == "true"
+
         # Fetch config for the network structure
         self.layer_sizes = []
         self.layer_acts = []
@@ -68,7 +75,8 @@ class TestTopp:
                                          self.sim_games)
         self.reinforcement_learner = ReinforcementLearner(
             self.sim_world, self.actor_network, self.mcts, self.num_policies,
-            self.weights_index, self.num_games, self.rl_epsilon)
+            self.weights_index, self.num_games, self.rl_epsilon,
+            self.rl_draw_board)
 
     def train(self):
         """
@@ -86,7 +94,7 @@ class TestTopp:
             topp = Tournament(self.sim_world, self.num_policies,
                               self.num_games_in_series, self.weights_path,
                               self.layer_sizes, self.layer_acts,
-                              self.optimizer)
+                              self.optimizer, self.topp_draw_board)
             topp.run()
 
 

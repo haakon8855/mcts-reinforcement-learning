@@ -16,12 +16,14 @@ class ReinforcementLearner():
                  num_policies: int = 5,
                  weights_index: int = 10,
                  num_games: int = 100,
-                 epsilon: float = 0.1):
+                 epsilon: float = 0.1,
+                 draw_board: bool = False):
         self.num_policies = num_policies
         self.num_games = num_games
         self.rbuf_distributions = []
         self.rbuf_states = []
         self.epsilon = epsilon
+        self.draw_board = draw_board
 
         self.sim_world = sim_world
         self.actor_network = actor_network
@@ -53,7 +55,8 @@ class ReinforcementLearner():
         for i in range(self.num_games):
             # s_init <- starting_board_state
             state = self.sim_world.get_initial_state()
-            self.sim_world.show_visible_board(state)
+            if self.draw_board:
+                self.sim_world.show_visible_board(state, title=f"Episode {i}")
             self.mcts.initialize_variables()
             while not self.sim_world.state_is_final(state):
                 # Initialize mcts to a single root which represents s_init
@@ -82,7 +85,9 @@ class ReinforcementLearner():
                 action = self.sim_world.get_one_hot_action(chosen_action_index)
                 # Perform chosen action
                 state = self.sim_world.get_child_state(state, action)
-                self.sim_world.show_visible_board(state)
+                if self.draw_board:
+                    self.sim_world.show_visible_board(state,
+                                                      title=f"Episode {i}")
 
             # Train ANET on cases from RBUF
             self.train_actor_network()

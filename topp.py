@@ -2,6 +2,7 @@
 
 import numpy as np
 from matplotlib import pyplot as plt
+from time import sleep
 
 from actor_network import ActorNetwork
 
@@ -11,9 +12,15 @@ class Tournament():
     Performs a tournament with the saved policies.
     """
 
-    def __init__(self, sim_world, num_policies: int, num_games_in_series: int,
-                 weights_path: str, network_layer_sizes: list,
-                 network_layer_acts: list, optimizer_str: str):
+    def __init__(self,
+                 sim_world,
+                 num_policies: int,
+                 num_games_in_series: int,
+                 weights_path: str,
+                 network_layer_sizes: list,
+                 network_layer_acts: list,
+                 optimizer_str: str,
+                 draw_board: bool = False):
         self.sim_world = sim_world
         self.num_policies = num_policies
         self.num_games_in_series = num_games_in_series
@@ -21,6 +28,9 @@ class Tournament():
         self.network_layer_sizes = network_layer_sizes
         self.network_layer_acts = network_layer_acts
         self.optimizer_str = optimizer_str
+        self.draw_board = draw_board
+        self.animation_sleep_duration = 0.5
+
         self.policies = []
         self.policies_win_count = [0] * num_policies
         self.init_policies()
@@ -73,6 +83,7 @@ class Tournament():
         """
         player_0 = self.policies[index_0]
         player_1 = self.policies[index_1]
+        title = f"Agent {index_0} (black) vs. Agent {index_1} (red)"
 
         state = self.sim_world.get_initial_state()
         while True:
@@ -84,6 +95,9 @@ class Tournament():
                                           p=distribution)[0]
             action = self.sim_world.get_one_hot_action(action_num)
             state = self.sim_world.get_child_state(state, action)
+            if self.draw_board:
+                self.sim_world.show_visible_board(state, title=title)
+                sleep(self.animation_sleep_duration)
             final = self.sim_world.state_is_final(state)
             if final:
                 self.policies_win_count[index_0] += 1
@@ -96,6 +110,9 @@ class Tournament():
                                           p=distribution)[0]
             action = self.sim_world.get_one_hot_action(action_num)
             state = self.sim_world.get_child_state(state, action)
+            if self.draw_board:
+                self.sim_world.show_visible_board(state, title=title)
+                sleep(self.animation_sleep_duration)
             final = self.sim_world.state_is_final(state)
             if final:
                 self.policies_win_count[index_1] += 1

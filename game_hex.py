@@ -201,11 +201,12 @@ class GameHex:
         board[p1_pieces] = 2
         return board.reshape((self.board_size, self.board_size))
 
-    def show_visible_board(self, state):
+    def show_visible_board(self, state, title: str = ""):
         """
         Shows a visual representation of the board state using matplotlib.
         """
         plt.clf()
+        plt.title(title)
         board = self.get_board_readable(state)
         board = board.flatten()
         coords = {}
