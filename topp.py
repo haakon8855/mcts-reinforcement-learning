@@ -11,11 +11,12 @@ class Tournament():
     Performs a tournament with the saved policies.
     """
 
-    def __init__(self, sim_world, num_policies: int, weights_path: str,
-                 network_layer_sizes: list, network_layer_acts: list,
-                 optimizer_str: str):
+    def __init__(self, sim_world, num_policies: int, num_games_in_series: int,
+                 weights_path: str, network_layer_sizes: list,
+                 network_layer_acts: list, optimizer_str: str):
         self.sim_world = sim_world
         self.num_policies = num_policies
+        self.num_games_in_series = num_games_in_series
         self.weights_path = weights_path
         self.network_layer_sizes = network_layer_sizes
         self.network_layer_acts = network_layer_acts
@@ -44,7 +45,7 @@ class Tournament():
         """
         for i in range(len(self.policies) - 1):
             for j in range(i + 1, len(self.policies)):
-                self.play_one_match(i, j)
+                self.play_one_series(i, j)
         print(f"Wins for each agent was: {self.policies_win_count}")
         self.plot_policies_win_count()
 
@@ -56,15 +57,15 @@ class Tournament():
                 self.policies_win_count)
         plt.show()
 
-    def play_one_match(self, index_a, index_b):
+    def play_one_series(self, index_a, index_b):
         """
         Plays one match between player at index_a and player at index_b,
         two games where each player gets to start once.
         """
-        self.play_one_game(index_a, index_b)
-        self.play_one_game(index_a, index_b)
-        self.play_one_game(index_b, index_a)
-        self.play_one_game(index_b, index_a)
+        players = [index_a, index_b]
+        for _ in range(self.num_games_in_series):
+            self.play_one_game(players[0], players[1])
+            players.reverse()
 
     def play_one_game(self, index_0, index_1):
         """
@@ -75,13 +76,25 @@ class Tournament():
 
         state = self.sim_world.get_initial_state()
         while True:
-            action = player_0.propose_action(state)
+            action, distribution = player_0.propose_action(
+                state, get_distribution=True)
+            distribution /= distribution.sum()
+            distribution = distribution.copy()[0]
+            action_num = np.random.choice(len(distribution), 1,
+                                          p=distribution)[0]
+            action = self.sim_world.get_one_hot_action(action_num)
             state = self.sim_world.get_child_state(state, action)
             final = self.sim_world.state_is_final(state)
             if final:
                 self.policies_win_count[index_0] += 1
                 return
-            action = player_1.propose_action(state)
+            action, distribution = player_1.propose_action(
+                state, get_distribution=True)
+            distribution /= distribution.sum()
+            distribution = distribution.copy()[0]
+            action_num = np.random.choice(len(distribution), 1,
+                                          p=distribution)[0]
+            action = self.sim_world.get_one_hot_action(action_num)
             state = self.sim_world.get_child_state(state, action)
             final = self.sim_world.state_is_final(state)
             if final:

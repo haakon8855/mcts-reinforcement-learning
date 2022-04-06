@@ -43,6 +43,9 @@ class TestTopp:
         # Fetch config for the simworld
         simworld_conf = self.config['SIMWORLD']
         self.board_size = int(simworld_conf['board_size'])
+        # Fetch config for the TOPP
+        topp_conf = self.config['TOPP']
+        self.num_games_in_series = int(topp_conf['num_games_in_series'])
         # Fetch config for the network structure
         self.layer_sizes = []
         self.layer_acts = []
@@ -81,8 +84,9 @@ class TestTopp:
             self.reinforcement_learner.play_hex()
         else:
             topp = Tournament(self.sim_world, self.num_policies,
-                              self.weights_path, self.layer_sizes,
-                              self.layer_acts, self.optimizer)
+                              self.num_games_in_series, self.weights_path,
+                              self.layer_sizes, self.layer_acts,
+                              self.optimizer)
             topp.run()
 
 
@@ -91,7 +95,7 @@ def main():
     Main function for running this python script.
     """
     # test_topp = TestTopp("config/config1.ini")  # 4x4 200ep 500sim
-    # test_topp = TestTopp("config/config2.ini")  # 7x7 272ep 500sim
+    # test_topp = TestTopp("config/config2.ini")  # 7x7 273ep 500sim
     # test_topp = TestTopp("config/config3.ini")  # 4x4 20ep 500sim
     test_topp = TestTopp("config/config4.ini")  # demo config, free to edit
     test_topp.train()
