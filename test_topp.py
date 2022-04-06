@@ -107,7 +107,7 @@ def main():
     # test_topp = TestTopp("config/config3.ini")  # 4x4 20ep 500sim
     test_topp = TestTopp("config/config4.ini")  # demo config, free to edit
     test_topp.train()
-    test_topp.run(play=False)
+    test_topp.run()
 
 
 if __name__ == "__main__":
