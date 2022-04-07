@@ -17,13 +17,15 @@ class ReinforcementLearner():
                  weights_index: int = 10,
                  num_games: int = 100,
                  epsilon: float = 0.1,
-                 draw_board: bool = False):
+                 draw_board: bool = False,
+                 epochs_per_episode: int = 100):
         self.num_policies = num_policies  # Number of policies to save
         self.num_games = num_games  # Number of actual episodes to run
         self.rbuf_distributions = []
         self.rbuf_states = []
         self.epsilon = epsilon  # Exploration value to choose actual move randomly
         self.draw_board = draw_board  # Whether to draw the board during training or not
+        self.epochs_per_episode = epochs_per_episode
 
         self.sim_world = sim_world
         self.actor_network = actor_network
@@ -61,11 +63,7 @@ class ReinforcementLearner():
             while not self.sim_world.state_is_final(state):
                 # Initialize mcts to a single root which represents s_init
                 # and run a simulated game from the root state.
-                try:
-                    action, distribution = self.mcts.mc_tree_search(state)
-                except ValueError:
-                    print("BROKE1")
-                    break
+                action, distribution = self.mcts.mc_tree_search(state)
                 # Append distribution and state to RBUF
                 self.rbuf_distributions.append(distribution)
                 self.rbuf_states.append(state)
@@ -106,7 +104,7 @@ class ReinforcementLearner():
         """
         self.actor_network.fit(train_x=np.array(self.rbuf_states),
                                train_y=np.array(self.rbuf_distributions),
-                               epochs=100)
+                               epochs=self.epochs_per_episode)
 
     def play_hex(self):
         """

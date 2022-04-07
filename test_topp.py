@@ -74,7 +74,7 @@ class TestTopp:
         self.reinforcement_learner = ReinforcementLearner(
             self.sim_world, self.actor_network, self.mcts, self.num_policies,
             self.weights_index, self.num_games, self.rl_epsilon,
-            self.rl_draw_board)
+            self.rl_draw_board, self.epochs_per_episode)
 
     def train(self):
         """
