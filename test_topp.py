@@ -100,10 +100,10 @@ def main():
     """
     Main function for running this python script.
     """
-    # test_topp = TestTopp("config/config1.ini")  # 4x4 200ep 500sim
+    test_topp = TestTopp("config/config1.ini")  # 4x4 200ep 500sim
     # test_topp = TestTopp("config/config2.ini")  # 7x7 273ep 500sim
     # test_topp = TestTopp("config/config3.ini")  # 4x4 20ep 500sim
-    test_topp = TestTopp("config/config4.ini")  # demo config, free to edit
+    # test_topp = TestTopp("config/config4.ini")  # demo config, free to edit
     test_topp.train()
     test_topp.run()
 
