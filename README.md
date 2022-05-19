@@ -1,8 +1,12 @@
 # Reinforcement Learning using Monte-Carlo Tree Search
 
+## Description
+
 A reinforcement learning system using Monte-Carlo Tree Search (MCTS) for learning and playing two-player games. This system uses Monte-Carlo Tree Search to simulate the continuation of a game a number of times for each move it makes. It uses these simulations during training to train an artificial neural network on giving the best actions given a game state.
 
 In this system, two different two-player games and a tournament system are implemented to assess the learning capabilities of the system.
+
+The diagram below shows the structure of the MCTS-RL-system:
 
 ![Diagram describing the MCTS RL system](figs/mctsDiagram.png)
 
